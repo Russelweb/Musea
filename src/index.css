@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-pinterest: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans,
+      Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Helvetica, 'Inter',
+      'Plus Jakarta Sans', sans-serif;
+  }
+
+  html {
+    font-family: var(--font-pinterest);
+    background-color: #0a0a0c;
+    color: #f4f1ea;
+    scroll-behavior: smooth;
+    letter-spacing: -0.011em;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-pinterest);
+    background-color: #0a0a0c;
+    color: #f4f1ea;
+    overflow-x: hidden;
+  }
+}
+
+.font-serif-museum {
+  font-family: var(--font-pinterest);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.font-sans-museum {
+  font-family: var(--font-pinterest);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
