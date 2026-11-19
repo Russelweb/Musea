@@ -134,7 +134,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             </div>
 
             {/* Visual Overlaid Results Grid */}
-            <div className="max-h-[60vh] overflow-y-auto p-4 sm:p-5">
+            <div className="max-h-[60vh] overflow-y-auto no-scrollbar p-4 sm:p-5">
               <div className="pb-3 flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-[#a39e93]">
                 <span>
                   {query.trim()
