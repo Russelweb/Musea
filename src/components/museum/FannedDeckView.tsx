@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import * as THREE from 'three';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -13,6 +20,18 @@ import {
 } from 'lucide-react';
 import { CATEGORIES, EXHIBITS } from '../../data/exhibits';
 import type { Exhibit } from '../../types/exhibit';
+
+interface ScreenRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+interface FocusedSelection {
+  exhibit: Exhibit;
+  sourceRect: ScreenRect | null;
+}
 
 interface FannedDeckViewProps {
   activeExhibit: Exhibit;
@@ -128,13 +147,42 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
   const [nearestExhibit, setNearestExhibit] = useState<Exhibit>(
     hallExhibits[initialIdx] || hallExhibits[0]
   );
-  const [focusedExhibit, setFocusedExhibit] = useState<Exhibit | null>(null);
+  const [focusedSelection, setFocusedSelection] = useState<FocusedSelection | null>(null);
+  const focusedExhibit = focusedSelection?.exhibit ?? null;
   const focusTimerRef = useRef<number | null>(null);
+  const targetArtRef = useRef<HTMLDivElement>(null);
+  const [flipOrigin, setFlipOrigin] = useState<{ x: number; y: number; scale: number }>({
+    x: 40,
+    y: 0,
+    scale: 1.08,
+  });
+
+  // Compute exact 3D-to-2D FLIP delta before first paint so the artwork smoothly resizes from its exact 3D wall position
+  useLayoutEffect(() => {
+    if (!focusedSelection?.sourceRect || !targetArtRef.current) return;
+    const targetRect = targetArtRef.current.getBoundingClientRect();
+    const src = focusedSelection.sourceRect;
+    if (targetRect.width > 0 && targetRect.height > 0 && src.width > 0) {
+      const srcCenterX = src.left + src.width / 2;
+      const srcCenterY = src.top + src.height / 2;
+      const tgtCenterX = targetRect.left + targetRect.width / 2;
+      const tgtCenterY = targetRect.top + targetRect.height / 2;
+      const scale = Math.max(0.45, Math.min(1.6, src.width / targetRect.width));
+      setFlipOrigin({
+        x: srcCenterX - tgtCenterX,
+        y: srcCenterY - tgtCenterY,
+        scale,
+      });
+    }
+  }, [focusedSelection]);
 
   const handleReturnToHall = useCallback(() => {
     if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
-    setFocusedExhibit(null);
-    apiRef.current.releaseFocus();
+    setFocusedSelection(null);
+    // Delay stepping the 3D camera back slightly so the artwork smoothly glides back onto the wall first
+    window.setTimeout(() => {
+      apiRef.current.releaseFocus();
+    }, 180);
   }, []);
 
   // Escape & Arrow Key navigation
@@ -278,6 +326,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     textures.push(poolTex);
 
     const meshes: THREE.Mesh[] = [];
+    const meshDims: Array<{ w: number; h: number }> = [];
     const focusPositions: THREE.Vector3[] = [];
     const ts: number[] = [];
     const N = hallExhibits.length;
@@ -332,6 +381,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       artMesh.userData.i = i;
       scene.add(artMesh);
       meshes.push(artMesh);
+      meshDims.push({ w: artW, h: artH });
 
       // Compute exact perpendicular camera dolly position directly in front of this painting
       const dollyDist = isPortrait ? 3.1 : 3.25;
@@ -474,6 +524,42 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       }
     };
 
+    const projectMeshToScreenRect = (index: number): ScreenRect | null => {
+      const mesh = meshes[index];
+      const dims = meshDims[index];
+      if (!mesh || !dims) return null;
+      mesh.updateMatrixWorld(true);
+      cam.updateMatrixWorld(true);
+      const rect = dom.getBoundingClientRect();
+      const hw = dims.w / 2;
+      const hh = dims.h / 2;
+      const corners = [
+        new THREE.Vector3(-hw, -hh, 0),
+        new THREE.Vector3(hw, -hh, 0),
+        new THREE.Vector3(-hw, hh, 0),
+        new THREE.Vector3(hw, hh, 0),
+      ];
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      corners.forEach((c) => {
+        c.applyMatrix4(mesh.matrixWorld).project(cam);
+        const px = rect.left + (c.x * 0.5 + 0.5) * rect.width;
+        const py = rect.top + (-c.y * 0.5 + 0.5) * rect.height;
+        if (px < minX) minX = px;
+        if (px > maxX) maxX = px;
+        if (py < minY) minY = py;
+        if (py > maxY) maxY = py;
+      });
+      return {
+        left: minX,
+        top: minY,
+        width: Math.max(40, maxX - minX),
+        height: Math.max(40, maxY - minY),
+      };
+    };
+
     const onPointerUp = (e: PointerEvent) => {
       const wasMoved = moved;
       dragStartX = null;
@@ -485,8 +571,12 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
           tgt = clamp(ts[i] - 0.015);
           if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
           focusTimerRef.current = window.setTimeout(() => {
-            setFocusedExhibit(hallExhibits[i]);
-          }, 680);
+            const sourceRect = projectMeshToScreenRect(i);
+            setFocusedSelection({
+              exhibit: hallExhibits[i],
+              sourceRect,
+            });
+          }, 640);
         }
       }
     };
@@ -513,7 +603,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       },
       jumpToExhibitIndex: (idx: number) => {
         focus = -1;
-        setFocusedExhibit(null);
+        setFocusedSelection(null);
         if (ts[idx] !== undefined) {
           tgt = clamp(ts[idx] - 0.042);
         }
@@ -743,18 +833,29 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
               <span>Back to gallery</span>
             </motion.button>
 
-            {/* Full-Wall Split Presentation: Artwork Glides Into Left · Wall Typography Staggers In Right */}
+            {/* Full-Wall Split Presentation: Artwork Smoothly Resizes From 3D Wall Position While Text Slides In Simultaneously */}
             <div className="min-h-full w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 pt-32 pb-16 flex items-center">
               <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-center">
-                {/* LEFT: Artwork Glides Smoothly From Center Focus Into Its Wall Frame */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 1.07, x: 32 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, x: 20 }}
-                  transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-                  className="md:col-span-6 flex flex-col items-center"
-                >
-                  <div className="relative">
+                {/* LEFT: Artwork Morphs & Resizes Smoothly From Exact 3D Screen Rect Into View-Mode Size */}
+                <div className="md:col-span-6 flex flex-col items-center">
+                  <motion.div
+                    ref={targetArtRef}
+                    initial={{
+                      x: flipOrigin.x,
+                      y: flipOrigin.y,
+                      scale: flipOrigin.scale,
+                      opacity: 0.92,
+                    }}
+                    animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                    exit={{
+                      x: flipOrigin.x,
+                      y: flipOrigin.y,
+                      scale: flipOrigin.scale,
+                      opacity: 0,
+                    }}
+                    transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative"
+                  >
                     <div
                       className="pointer-events-none absolute -inset-12 -z-10"
                       style={{
@@ -769,21 +870,28 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                         className="max-h-[52dvh] md:max-h-[64dvh] w-auto h-auto object-contain block"
                       />
                     </div>
-                  </div>
-                  <div className="mt-4 w-full max-w-md flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-[#b8b3aa]">
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.45, delay: 0.25 }}
+                    className="mt-4 w-full max-w-md flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-[#b8b3aa]"
+                  >
                     <span>{focusedExhibit.hallNumber}</span>
                     <span>{focusedExhibit.dimensions || focusedExhibit.period}</span>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                </div>
 
-                {/* RIGHT: Curatorial Text Staggers Gracefully Onto the Wall */}
-                <div className="md:col-span-6 space-y-5 text-left">
-                  <motion.div
-                    initial={{ opacity: 0, y: 18 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.55, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                  >
+                {/* RIGHT: Curatorial Text Slides In Smoothly From the Right At The Same Time */}
+                <motion.div
+                  initial={{ opacity: 0, x: 56 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 44 }}
+                  transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+                  className="md:col-span-6 space-y-5 text-left"
+                >
+                  <div>
                     <span className="block text-[11px] font-semibold uppercase tracking-[0.24em] text-[#e5b85b] mb-1.5">
                       {focusedExhibit.categoryLabel}
                     </span>
@@ -793,16 +901,10 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                     <p className="text-base sm:text-lg text-[#e8e3d8] font-medium mt-1">
                       {focusedExhibit.creator}
                     </p>
-                  </motion.div>
+                  </div>
 
                   {/* Subtle Wall Hairline Metadata Row */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    transition={{ duration: 0.5, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                    className="flex flex-wrap gap-x-5 gap-y-2 py-3 border-y border-[#f4f1ea]/15 text-xs text-[#d5d0c5]"
-                  >
+                  <div className="flex flex-wrap gap-x-5 gap-y-2 py-3 border-y border-[#f4f1ea]/15 text-xs text-[#d5d0c5]">
                     <span className="inline-flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-[#e5b85b]" />
                       {focusedExhibit.date}
@@ -815,32 +917,20 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                       <Layers className="w-3.5 h-3.5 text-[#e5b85b]" />
                       {focusedExhibit.mediumOrMaterial.split(';')[0]}
                     </span>
-                  </motion.div>
+                  </div>
 
                   {/* Clean Wall Description */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    transition={{ duration: 0.52, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                    className="space-y-3 text-sm sm:text-[15px] text-[#e8e3d8]/92 leading-relaxed max-w-lg"
-                  >
+                  <div className="space-y-3 text-sm sm:text-[15px] text-[#e8e3d8]/92 leading-relaxed max-w-lg">
                     <p>{focusedExhibit.introduction}</p>
                     {focusedExhibit.story.paragraphs[0] && (
                       <p className="text-[#c5c0b7] text-xs sm:text-sm leading-relaxed">
                         {focusedExhibit.story.paragraphs[0]}
                       </p>
                     )}
-                  </motion.div>
+                  </div>
 
                   {/* Primary CTA Directly Beneath the Wall Text */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    transition={{ duration: 0.52, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
-                    className="pt-3 max-w-md"
-                  >
+                  <div className="pt-3 max-w-md">
                     <button
                       onClick={() => onSelectExhibit(focusedExhibit)}
                       className="w-full inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-full bg-[#e5b85b] hover:bg-[#f0c770] text-[#09090c] text-xs sm:text-sm font-bold uppercase tracking-[0.16em] transition-all cursor-pointer shadow-[0_14px_34px_rgba(0,0,0,0.35)]"
@@ -848,8 +938,8 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                       <Play className="w-4 h-4 fill-current" />
                       <span>Enter Living Stage</span>
                     </button>
-                  </motion.div>
-                </div>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>
