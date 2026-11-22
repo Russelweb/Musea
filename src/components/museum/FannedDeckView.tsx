@@ -179,10 +179,10 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
   const handleReturnToHall = useCallback(() => {
     if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
     setFocusedSelection(null);
-    // Delay stepping the 3D camera back slightly so the artwork smoothly glides back onto the wall first
+    // Delay stepping the 3D camera back so the artwork calmly glides back onto the wall first
     window.setTimeout(() => {
       apiRef.current.releaseFocus();
-    }, 180);
+    }, 360);
   }, []);
 
   // Escape & Arrow Key navigation
@@ -576,7 +576,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
               exhibit: hallExhibits[i],
               sourceRect,
             });
-          }, 640);
+          }, 1200);
         }
       }
     };
@@ -645,9 +645,9 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         lookAtCur.copy(lookAtTarget);
         camInitialized = true;
       } else {
-        // Silky dolly-in & step-back interpolation
-        const posEase = focus >= 0 ? 0.075 : 0.085;
-        const lookEase = focus >= 0 ? 0.085 : 0.095;
+        // Calm, half-speed dolly-in & step-back interpolation
+        const posEase = focus >= 0 ? 0.038 : 0.042;
+        const lookEase = focus >= 0 ? 0.042 : 0.048;
         camPosCur.lerp(camPosTarget, posEase);
         lookAtCur.lerp(lookAtTarget, lookEase);
       }
@@ -655,7 +655,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       // Subtle cinema telephoto lens pull when approaching a painting, widening back when stepping out
       const targetFov = focus >= 0 ? baseFov - 11 : baseFov;
       if (Math.abs(targetFov - curFov) > 0.02) {
-        curFov += (targetFov - curFov) * 0.075;
+        curFov += (targetFov - curFov) * 0.038;
         cam.fov = curFov;
         cam.updateProjectionMatrix();
       }
@@ -813,7 +813,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-30 overflow-y-auto no-scrollbar cursor-default"
             style={{
               background:
@@ -825,7 +825,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
               initial={{ opacity: 0, x: -14 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.4, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.8, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
               onClick={handleReturnToHall}
               className="fixed top-20 left-5 sm:left-10 z-40 inline-flex items-center gap-2 text-xs font-medium text-[#d5d0c5] hover:text-[#f4f1ea] transition-colors cursor-pointer"
             >
@@ -853,7 +853,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                       scale: flipOrigin.scale,
                       opacity: 0,
                     }}
-                    transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 1.44, ease: [0.16, 1, 0.3, 1] }}
                     className="relative"
                   >
                     <div
@@ -875,7 +875,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.45, delay: 0.25 }}
+                    transition={{ duration: 0.9, delay: 0.45 }}
                     className="mt-4 w-full max-w-md flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-[#b8b3aa]"
                   >
                     <span>{focusedExhibit.hallNumber}</span>
@@ -888,7 +888,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                   initial={{ opacity: 0, x: 56 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 44 }}
-                  transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 1.44, ease: [0.16, 1, 0.3, 1] }}
                   className="md:col-span-6 space-y-5 text-left"
                 >
                   <div>
