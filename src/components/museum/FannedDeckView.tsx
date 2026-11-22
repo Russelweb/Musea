@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   Calendar,
-  Compass,
   Layers,
   MapPin,
   Minus,
@@ -20,7 +19,7 @@ interface FannedDeckViewProps {
   onSelectExhibit: (exhibit: Exhibit) => void;
 }
 
-/** Draw an elegant dark-luxury placeholder canvas while a high-res artwork texture streams in */
+/** Draw an elegant placeholder canvas while a high-res artwork texture streams in */
 function createPlaceholderTexture(exhibit: Exhibit): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = 512;
@@ -28,8 +27,8 @@ function createPlaceholderTexture(exhibit: Exhibit): THREE.CanvasTexture {
   const ctx = c.getContext('2d');
   if (ctx) {
     const grad = ctx.createLinearGradient(0, 0, 512, 640);
-    grad.addColorStop(0, exhibit.atmosphere.bgSecondary);
-    grad.addColorStop(1, '#09090d');
+    grad.addColorStop(0, '#2a2933');
+    grad.addColorStop(1, '#18171e');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 512, 640);
 
@@ -40,18 +39,18 @@ function createPlaceholderTexture(exhibit: Exhibit): THREE.CanvasTexture {
     ctx.fillStyle = '#e5b85b';
     ctx.font = '600 18px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(exhibit.categoryLabel.toUpperCase(), 256, 285);
+    ctx.fillText(exhibit.categoryLabel.toUpperCase(), 256, 290);
 
     ctx.fillStyle = '#f4f1ea';
-    ctx.font = '700 32px Inter, sans-serif';
-    ctx.fillText(exhibit.title.slice(0, 26), 256, 332);
+    ctx.font = '700 30px Inter, sans-serif';
+    ctx.fillText(exhibit.title.slice(0, 26), 256, 336);
   }
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
 }
 
-/** Draw a crisp dark-luxury museum wall caption plaque mounted below each artwork */
+/** Draw a crisp museum wall caption plaque mounted directly on the wall below each artwork */
 function createCaptionTexture(exhibit: Exhibit): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = 768;
@@ -60,23 +59,17 @@ function createCaptionTexture(exhibit: Exhibit): THREE.CanvasTexture {
   if (ctx) {
     ctx.clearRect(0, 0, 768, 192);
 
-    // Subtle dark glass backing plate
-    ctx.fillStyle = 'rgba(14, 14, 20, 0.72)';
-    ctx.fillRect(0, 0, 768, 192);
-    ctx.fillStyle = '#e5b85b';
-    ctx.fillRect(0, 0, 6, 192);
+    ctx.fillStyle = '#f5f2eb';
+    ctx.font = '700 40px Inter, -apple-system, sans-serif';
+    ctx.fillText(exhibit.title, 12, 54);
 
-    ctx.fillStyle = '#f4f1ea';
-    ctx.font = '700 38px Inter, -apple-system, sans-serif';
-    ctx.fillText(exhibit.title, 28, 62);
-
-    ctx.fillStyle = '#e5b85b';
+    ctx.fillStyle = '#e6c278';
     ctx.font = '500 28px Inter, -apple-system, sans-serif';
-    ctx.fillText(`${exhibit.creator} · ${exhibit.date}`, 28, 114);
+    ctx.fillText(`${exhibit.creator} · ${exhibit.date}`, 12, 106);
 
-    ctx.fillStyle = '#9c968b';
+    ctx.fillStyle = '#b9b4ab';
     ctx.font = '600 20px Inter, -apple-system, sans-serif';
-    ctx.fillText(exhibit.categoryLabel.toUpperCase(), 28, 158);
+    ctx.fillText(exhibit.categoryLabel.toUpperCase(), 12, 150);
   }
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -91,10 +84,10 @@ function createSpotlightPoolTexture(): THREE.CanvasTexture {
   c.height = 256;
   const ctx = c.getContext('2d');
   if (ctx) {
-    const g = ctx.createRadialGradient(128, 118, 10, 128, 128, 124);
-    g.addColorStop(0, 'rgba(246, 214, 152, 0.68)');
-    g.addColorStop(0.45, 'rgba(229, 184, 91, 0.22)');
-    g.addColorStop(1, 'rgba(229, 184, 91, 0)');
+    const g = ctx.createRadialGradient(128, 114, 12, 128, 128, 124);
+    g.addColorStop(0, 'rgba(255, 236, 196, 0.75)');
+    g.addColorStop(0.48, 'rgba(240, 212, 154, 0.24)');
+    g.addColorStop(1, 'rgba(240, 212, 154, 0)');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 256, 256);
   }
@@ -144,7 +137,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     apiRef.current.releaseFocus();
   }, []);
 
-  // Escape key returns to the 3D Museum Corridor
+  // Escape & Arrow Key navigation
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
@@ -167,33 +160,37 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     let W = el.clientWidth || window.innerWidth;
     let H = el.clientHeight || window.innerHeight;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: 'high-performance',
+    });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(W, H);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     el.appendChild(renderer.domElement);
 
+    // Lighter, Sculpted Architectural Warm-Charcoal Gallery Atmosphere so walls, floor, ceiling & bends read clearly
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0b0b10);
-    scene.fog = new THREE.Fog(0x0b0b10, 5, 36);
+    scene.background = new THREE.Color(0x2d2c34);
+    scene.fog = new THREE.Fog(0x2d2c34, 8, 48);
 
-    const cam = new THREE.PerspectiveCamera(W < 640 ? 70 : 60, W / H, 0.1, 120);
+    const cam = new THREE.PerspectiveCamera(W < 640 ? 70 : 60, W / H, 0.1, 130);
 
-    // Warm Museum Gallery Lighting
-    scene.add(new THREE.HemisphereLight(0xf6ead6, 0x1a1922, 0.95));
-    const lamp = new THREE.PointLight(0xffeed4, 1.35, 18);
+    // Balanced Museum Architectural Lighting
+    scene.add(new THREE.HemisphereLight(0xfff7ea, 0x3f3d4a, 1.35));
+    const lamp = new THREE.PointLight(0xfff1d8, 1.75, 24);
     scene.add(lamp);
 
-    // Winding Architectural Corridor Spline (extended cleanly for all 15 exhibits)
+    // Winding Architectural Corridor Spline
     const pts: THREE.Vector3[] = [];
     for (let k = 0; k <= 16; k++) {
       pts.push(new THREE.Vector3(Math.sin(k * 0.48) * 6.8, 0, -k * 6.8));
     }
     const curve = new THREE.CatmullRomCurve3(pts);
 
-    const HW = 3.35; // Half-width of museum corridor
+    const HW = 3.35; // Half-width of corridor
     const HT = 4.55; // Ceiling height
-    const S = 320;   // Corridor smoothness segments
+    const S = 320;   // Corridor segments
 
     const frames: Array<{ p: THREE.Vector3; n: THREE.Vector3 }> = [];
     for (let s = 0; s <= S; s++) {
@@ -242,17 +239,17 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     const at = (f: { p: THREE.Vector3; n: THREE.Vector3 }, s: number, y: number) =>
       f.p.clone().addScaledVector(f.n, s * HW).setY(y);
 
-    // Dark Luxury Museum Corridor Architecture
-    addStrip((f) => at(f, -1, 0), (f) => at(f, -1, HT), 0x1c1b22); // Left obsidian wall
-    addStrip((f) => at(f, 1, 0), (f) => at(f, 1, HT), 0x1c1b22);   // Right obsidian wall
-    addStrip((f) => at(f, -1, 0), (f) => at(f, 1, 0), 0x111016);   // Dark slate floor
-    addStrip((f) => at(f, -1, HT), (f) => at(f, 1, HT), 0x16151c); // Architectural ceiling
-    addStrip((f) => at(f, -0.992, 0), (f) => at(f, -0.992, 0.15), 0x2c2824); // Skirting L
-    addStrip((f) => at(f, 0.992, 0), (f) => at(f, 0.992, 0.15), 0x2c2824);   // Skirting R
-    // Warm architectural ceiling light strip running down the center
-    addStrip((f) => at(f, -0.16, HT - 0.015), (f) => at(f, 0.16, HT - 0.015), 0xf6e6c4, 0xf6e6c4);
+    // Distinct Architectural Surfaces: Warm Plaster Walls, Slate Floor, Lighter Ceiling & Crisp Baseboards
+    addStrip((f) => at(f, -1, 0), (f) => at(f, -1, HT), 0x45434e); // Left wall
+    addStrip((f) => at(f, 1, 0), (f) => at(f, 1, HT), 0x45434e);   // Right wall
+    addStrip((f) => at(f, -1, 0), (f) => at(f, 1, 0), 0x2f2e36);   // Floor
+    addStrip((f) => at(f, -1, HT), (f) => at(f, 1, HT), 0x565460); // Ceiling
+    addStrip((f) => at(f, -0.992, 0), (f) => at(f, -0.992, 0.16), 0x1d1c22); // Crisp skirting L
+    addStrip((f) => at(f, 0.992, 0), (f) => at(f, 0.992, 0.16), 0x1d1c22);   // Crisp skirting R
+    // Luminous Architectural Ceiling Light Strip
+    addStrip((f) => at(f, -0.2, HT - 0.015), (f) => at(f, 0.2, HT - 0.015), 0xfff4dd, 0xfff4dd);
 
-    // Atmospheric Floating Golden Dust Motes
+    // Soft Floating Golden Dust Motes
     const dp: number[] = [];
     for (let k = 0; k < 520; k++) {
       const f = frames[Math.floor(Math.random() * S)];
@@ -262,10 +259,10 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     const dg = new THREE.BufferGeometry();
     dg.setAttribute('position', new THREE.Float32BufferAttribute(dp, 3));
     const dustMat = new THREE.PointsMaterial({
-      color: 0xf0cf88,
-      size: 0.045,
+      color: 0xfff0cc,
+      size: 0.048,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.6,
       depthWrite: false,
     });
     geometries.push(dg);
@@ -273,7 +270,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     const dust = new THREE.Points(dg, dustMat);
     scene.add(dust);
 
-    // Load Real Masterwork Artworks Along Left & Right Walls
+    // Load Real CORS-Verified High-Res Masterwork Textures
     const texLoader = new THREE.TextureLoader();
     texLoader.setCrossOrigin('anonymous');
 
@@ -284,10 +281,10 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     const ts: number[] = [];
     const N = hallExhibits.length;
 
-    const frameMat = new THREE.MeshLambertMaterial({ color: 0x26201a });
-    const brassTrimMat = new THREE.MeshBasicMaterial({ color: 0x9b7e48 });
-    const benchMat = new THREE.MeshLambertMaterial({ color: 0x1d1b22 });
-    const benchLegMat = new THREE.MeshLambertMaterial({ color: 0x3b3124 });
+    const frameMat = new THREE.MeshLambertMaterial({ color: 0x18161a });
+    const brassTrimMat = new THREE.MeshBasicMaterial({ color: 0xc5a260 });
+    const benchMat = new THREE.MeshLambertMaterial({ color: 0x201e24 });
+    const benchLegMat = new THREE.MeshLambertMaterial({ color: 0x7a6540 });
     materials.push(frameMat, brassTrimMat, benchMat, benchLegMat);
 
     hallExhibits.forEach((exhibit, i) => {
@@ -305,7 +302,6 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       const artW = isPortrait ? 2.15 : 2.85;
       const artH = isPortrait ? 2.75 : 2.05;
 
-      // Placeholder texture swapped seamlessly when high-res Wikimedia image loads
       const placeholderTex = createPlaceholderTexture(exhibit);
       textures.push(placeholderTex);
       const artMat = new THREE.MeshBasicMaterial({ map: placeholderTex });
@@ -322,7 +318,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         },
         undefined,
         () => {
-          // Keep clean museum placeholder if offline
+          // Fallback already visible
         }
       );
 
@@ -330,13 +326,13 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       const artGeo = new THREE.PlaneGeometry(artW, artH);
       geometries.push(artGeo);
       const artMesh = new THREE.Mesh(artGeo, artMat);
-      artMesh.position.set(wp.x, 2.25, wp.z);
-      artMesh.lookAt(p.x, 2.25, p.z);
+      artMesh.position.set(wp.x, 2.28, wp.z);
+      artMesh.lookAt(p.x, 2.28, p.z);
       artMesh.userData.i = i;
       scene.add(artMesh);
       meshes.push(artMesh);
 
-      // Physical 3D Gallery Frame & Subtle Brass Inner Lip
+      // 3D Museum Frame + Subtle Gold Lip
       const trimGeo = new THREE.BoxGeometry(artW + 0.06, artH + 0.06, 0.03);
       const frGeo = new THREE.BoxGeometry(artW + 0.2, artH + 0.2, 0.07);
       geometries.push(trimGeo, frGeo);
@@ -355,23 +351,23 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
 
       // Warm Spotlight Pool on Wall Behind Frame
       const wl = p.clone().addScaledVector(n, side * (HW - 0.018));
-      const poolGeo = new THREE.PlaneGeometry(artW + 2.6, artH + 2.5);
+      const poolGeo = new THREE.PlaneGeometry(artW + 2.8, artH + 2.6);
       const poolMat = new THREE.MeshBasicMaterial({
         map: poolTex,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.58,
         depthWrite: false,
       });
       geometries.push(poolGeo);
       materials.push(poolMat);
       const pool = new THREE.Mesh(poolGeo, poolMat);
-      pool.position.set(wl.x, 2.28, wl.z);
-      pool.lookAt(p.x, 2.28, p.z);
+      pool.position.set(wl.x, 2.3, wl.z);
+      pool.lookAt(p.x, 2.3, p.z);
       scene.add(pool);
 
-      // Museum Gallery Bench placed periodically along the corridor
-      if (i % 3 === 0) {
-        const bn = p.clone().addScaledVector(n, -side * (HW - 1.35));
+      // Museum Gallery Benches Along the Corridor
+      if (i % 2 === 0) {
+        const bn = p.clone().addScaledVector(n, -side * (HW - 1.3));
         const benchTopGeo = new THREE.BoxGeometry(1.75, 0.14, 0.52);
         const benchBaseGeo = new THREE.BoxGeometry(1.45, 0.34, 0.36);
         geometries.push(benchTopGeo, benchBaseGeo);
@@ -387,16 +383,16 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         scene.add(bchBase);
       }
 
-      // Crisp Museum Wall Caption Plaque Below Each Artwork
+      // Museum Wall Caption Plaque Mounted Below Each Frame
       const cTex = createCaptionTexture(exhibit);
       textures.push(cTex);
-      const capGeo = new THREE.PlaneGeometry(1.65, 0.41);
+      const capGeo = new THREE.PlaneGeometry(1.7, 0.42);
       const capMat = new THREE.MeshBasicMaterial({ map: cTex, transparent: true });
       geometries.push(capGeo);
       materials.push(capMat);
       const cap = new THREE.Mesh(capGeo, capMat);
-      cap.position.set(wp.x, 2.25 - artH / 2 - 0.36, wp.z);
-      cap.lookAt(p.x, 2.25 - artH / 2 - 0.36, p.z);
+      cap.position.set(wp.x, 2.28 - artH / 2 - 0.36, wp.z);
+      cap.lookAt(p.x, 2.28 - artH / 2 - 0.36, p.z);
       scene.add(cap);
     });
 
@@ -455,7 +451,6 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         const dx = e.clientX - dragStartX;
         const dy = e.clientY - dragStartY;
         if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
-        // Support both horizontal swipe & vertical drag smoothly on mobile & desktop
         const primaryDelta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
         tgt = clamp(tgt - primaryDelta * 0.00052);
         dragStartX = e.clientX;
@@ -474,7 +469,6 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         const i = pick(e.clientX, e.clientY);
         if (i >= 0) {
           focus = i;
-          // Walk right up to the chosen painting so it fills the view as the camera turns to face it
           tgt = clamp(ts[i] - 0.022);
           if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
           focusTimerRef.current = window.setTimeout(() => {
@@ -520,20 +514,17 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       cur += (tgt - cur) * 0.065;
       yaw += (yawT - yaw) * 0.05;
 
-      // Subtle hover elevation on hovered artwork
       meshes.forEach((m, i) => {
         const targetScale = i === hov && focus < 0 ? 1.035 : 1;
         m.scale.setScalar(m.scale.x + (targetScale - m.scale.x) * 0.14);
       });
 
-      // Gentle floating dust animation
       const now = performance.now();
       dust.position.y = Math.sin(now / 2600) * 0.08;
       dust.rotation.y = Math.sin(now / 11000) * 0.008;
 
       const safeCur = Math.max(0.001, Math.min(0.999, cur));
       const p = curve.getPointAt(safeCur);
-      // Calm first-person walking head-bob
       cam.position.set(p.x, 1.72 + Math.sin(safeCur * 420) * 0.011, p.z);
 
       if (focus >= 0 && meshes[focus]) {
@@ -558,7 +549,6 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
 
       lamp.position.set(cam.position.x, 3.65, cam.position.z);
 
-      // Update active "You are walking past" indicator
       let best = 0;
       let bestDist = 9;
       ts.forEach((tVal, i) => {
@@ -602,19 +592,16 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden select-none bg-[#0b0b10]">
+    <div className="relative w-full h-full overflow-hidden select-none bg-[#2d2c34]">
       {/* 1. Three.js Interactive 3D Winding Museum Corridor */}
-      <div
-        ref={mountRef}
-        className="absolute inset-0 w-full h-full touch-none"
-      />
+      <div ref={mountRef} className="absolute inset-0 w-full h-full touch-none" />
 
-      {/* Soft Cinematic Edge Vignette */}
+      {/* Gentle Architectural Edge Vignette */}
       <div
         className="pointer-events-none absolute inset-0 z-10"
         style={{
           background:
-            'radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(6, 6, 10, 0.55) 100%)',
+            'radial-gradient(ellipse at 50% 45%, transparent 58%, rgba(15, 14, 20, 0.42) 100%)',
         }}
       />
 
@@ -628,9 +615,8 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
             transition={{ duration: 0.3 }}
             className="pointer-events-none absolute inset-x-0 bottom-4 sm:bottom-6 z-20 px-4 flex flex-col items-center gap-3"
           >
-            {/* Current Wing & Artwork Floor Readout */}
             <div className="text-center">
-              <span className="block text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.26em] text-[#a39e93]">
+              <span className="block text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.26em] text-[#d5d0c5]">
                 You are walking past
               </span>
               <AnimatePresence mode="wait">
@@ -641,7 +627,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                   exit={{ opacity: 0, y: -5 }}
                   transition={{ duration: 0.25 }}
                 >
-                  <h2 className="font-art-script text-3xl sm:text-4xl text-[#f4f1ea] leading-tight">
+                  <h2 className="font-art-script text-3xl sm:text-4xl text-[#fdfbf7] leading-tight drop-shadow">
                     {nearestExhibit.title}
                   </h2>
                   <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-[#e5b85b]">
@@ -652,7 +638,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
             </div>
 
             {/* Wing Quick-Jump Bar */}
-            <div className="pointer-events-auto flex items-center gap-1 px-2 py-1 rounded-full bg-[#121218]/80 backdrop-blur-2xl border border-[#f4f1ea]/12 overflow-x-auto no-scrollbar max-w-[90vw]">
+            <div className="pointer-events-auto flex items-center gap-1 px-2 py-1 rounded-full bg-[#191820]/75 backdrop-blur-2xl border border-[#f4f1ea]/15 overflow-x-auto no-scrollbar max-w-[90vw]">
               {CATEGORIES.map((cat) => {
                 const isActiveWing = nearestExhibit.category === cat.id;
                 return (
@@ -662,7 +648,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                     className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer shrink-0 ${
                       isActiveWing
                         ? 'bg-[#e5b85b] text-[#09090c] font-semibold'
-                        : 'text-[#a39e93] hover:text-[#f4f1ea]'
+                        : 'text-[#d5d0c5] hover:text-[#f4f1ea]'
                     }`}
                   >
                     {cat.shortLabel}
@@ -671,20 +657,20 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
               })}
             </div>
 
-            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[#a39e93]/80">
-              <MoveHorizontal className="w-3 h-3 text-[#e5b85b]/80" />
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[#d5d0c5]/80">
+              <MoveHorizontal className="w-3 h-3 text-[#e5b85b]" />
               <span>Scroll or drag to walk · Click any painting to step closer</span>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Subtle Step Forward / Backward Buttons (Bottom-Right, like the prototype's − / + buttons) */}
+      {/* Subtle Step Forward / Backward Buttons (Bottom-Right) */}
       {!focusedExhibit && (
         <div className="hidden sm:flex items-center gap-2 fixed right-6 bottom-6 z-20">
           <button
             onClick={() => apiRef.current.step(-0.045)}
-            className="w-9 h-9 rounded-full bg-[#14141b]/80 hover:bg-[#e5b85b] text-[#d5d0c5] hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/15 flex items-center justify-center transition-all cursor-pointer"
+            className="w-9 h-9 rounded-full bg-[#1c1b24]/80 hover:bg-[#e5b85b] text-[#f4f1ea] hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/18 flex items-center justify-center transition-all cursor-pointer"
             title="Walk Backward"
             aria-label="Walk backward"
           >
@@ -692,7 +678,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
           </button>
           <button
             onClick={() => apiRef.current.step(0.045)}
-            className="w-9 h-9 rounded-full bg-[#14141b]/80 hover:bg-[#e5b85b] text-[#d5d0c5] hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/15 flex items-center justify-center transition-all cursor-pointer"
+            className="w-9 h-9 rounded-full bg-[#1c1b24]/80 hover:bg-[#e5b85b] text-[#f4f1ea] hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/18 flex items-center justify-center transition-all cursor-pointer"
             title="Walk Forward"
             aria-label="Walk forward"
           >
@@ -701,101 +687,102 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         </div>
       )}
 
-      {/* 3. FOCUSED SPLIT INSPECTION VIEW (Artwork on Left, Description & "Enter Living Stage" on Right) */}
+      {/* 3. FULL-SCREEN ON-THE-WALL CURATORIAL VIEW (No Modal Box! Matches the HTML prototype's seamless wall surface) */}
       <AnimatePresence>
         {focusedExhibit && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
-            className="fixed inset-0 z-30 flex items-center justify-center px-4 sm:px-8 lg:px-14 pt-20 pb-6 bg-[#07070b]/80 backdrop-blur-xl cursor-default"
-            onClick={handleReturnToHall}
+            initial={{ opacity: 0, scale: 1.035 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.02 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-30 overflow-y-auto no-scrollbar cursor-default"
+            style={{
+              background:
+                'radial-gradient(ellipse 80% 60% at 34% 42%, rgba(244, 214, 152, 0.12) 0%, transparent 65%), linear-gradient(180deg, #32313a 0%, #26252d 55%, #1d1c23 100%)',
+            }}
           >
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16, scale: 0.96 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-5xl max-h-[82dvh] overflow-y-auto no-scrollbar rounded-3xl bg-[#111117]/95 border border-[#f4f1ea]/14 shadow-[0_35px_100px_rgba(0,0,0,0.92)] p-5 sm:p-8 lg:p-10"
+            {/* Minimal On-Wall Back Button (Like ".back" in the reference HTML) */}
+            <button
+              onClick={handleReturnToHall}
+              className="fixed top-20 left-5 sm:left-10 z-40 inline-flex items-center gap-2 text-xs font-medium text-[#d5d0c5] hover:text-[#f4f1ea] transition-colors cursor-pointer"
             >
-              {/* Top Back to 3D Museum Corridor Button */}
-              <div className="flex items-center justify-between mb-6">
-                <button
-                  onClick={handleReturnToHall}
-                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1a1a23] hover:bg-[#242430] border border-[#f4f1ea]/10 text-xs font-semibold text-[#d5d0c5] hover:text-[#f4f1ea] transition-colors cursor-pointer"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5 text-[#e5b85b]" />
-                  <span>Back to 3D Hall</span>
-                </button>
+              <ArrowLeft className="w-4 h-4 text-[#e5b85b]" />
+              <span>Back to gallery</span>
+            </button>
 
-                <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#e5b85b]">
-                  {focusedExhibit.hallNumber}
-                </span>
-              </div>
-
-              {/* Side-by-Side Split: Framed Artwork Left · Curatorial Description & CTA Right */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 items-center">
-                {/* LEFT: Clean Full Uncropped Artwork */}
-                <div className="md:col-span-6 flex items-center justify-center">
-                  <div className="relative rounded-2xl overflow-hidden bg-[#09090d] p-2 border border-[#f4f1ea]/12 shadow-[0_24px_70px_rgba(0,0,0,0.85)]">
-                    <img
-                      src={focusedExhibit.images.main}
-                      alt={focusedExhibit.title}
-                      className="max-h-[42dvh] md:max-h-[58dvh] w-auto h-auto object-contain rounded-xl mx-auto"
+            {/* Full-Wall Split Presentation: Artwork Hung Directly on Wall Left · Wall Plaque Text Right */}
+            <div className="min-h-full w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 pt-32 pb-16 flex items-center">
+              <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-center">
+                {/* LEFT: Artwork Mounted Directly on the Museum Wall with Natural Gallery Drop Shadow */}
+                <div className="md:col-span-6 flex flex-col items-center">
+                  <div className="relative">
+                    {/* Soft overhead wall spotlight behind the frame */}
+                    <div
+                      className="pointer-events-none absolute -inset-12 -z-10"
+                      style={{
+                        background:
+                          'radial-gradient(circle at 50% 45%, rgba(255, 232, 184, 0.22) 0%, transparent 68%)',
+                      }}
                     />
+                    <div className="p-2 bg-[#17161b] ring-1 ring-[#c5a260]/45 shadow-[0_32px_70px_rgba(0,0,0,0.65)]">
+                      <img
+                        src={focusedExhibit.images.main}
+                        alt={focusedExhibit.title}
+                        className="max-h-[52dvh] md:max-h-[64dvh] w-auto h-auto object-contain block"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4 w-full max-w-md flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-[#b8b3aa]">
+                    <span>{focusedExhibit.hallNumber}</span>
+                    <span>{focusedExhibit.dimensions || focusedExhibit.period}</span>
                   </div>
                 </div>
 
-                {/* RIGHT: Art Description, Metadata & Enter Living Room Button Beneath */}
-                <div className="md:col-span-6 flex flex-col justify-center space-y-4 text-left">
-                  <div className="space-y-1">
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#e5b85b]">
-                      <Compass className="w-3.5 h-3.5" />
+                {/* RIGHT: Curatorial Text Printed Directly on the Gallery Wall + Enter Living Stage Beneath */}
+                <div className="md:col-span-6 space-y-5 text-left">
+                  <div>
+                    <span className="block text-[11px] font-semibold uppercase tracking-[0.24em] text-[#e5b85b] mb-1.5">
                       {focusedExhibit.categoryLabel}
                     </span>
-
-                    <h2 className="font-art-script text-4xl sm:text-5xl text-[#fdfbf7] leading-tight">
+                    <h1 className="font-art-script text-5xl sm:text-6xl text-[#fdfbf7] leading-[1.04]">
                       {focusedExhibit.title}
-                    </h2>
-
-                    <p className="text-sm font-medium text-[#d5d0c5]">
+                    </h1>
+                    <p className="text-base sm:text-lg text-[#e8e3d8] font-medium mt-1">
                       {focusedExhibit.creator}
                     </p>
                   </div>
 
-                  {/* Metadata Chips */}
-                  <div className="flex flex-wrap gap-2 py-1">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#181822] border border-[#f4f1ea]/10 text-[11px] text-[#d5d0c5]">
-                      <Calendar className="w-3 h-3 text-[#e5b85b]" />
+                  {/* Subtle Wall Hairline Metadata Row */}
+                  <div className="flex flex-wrap gap-x-5 gap-y-2 py-3 border-y border-[#f4f1ea]/15 text-xs text-[#d5d0c5]">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-[#e5b85b]" />
                       {focusedExhibit.date}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#181822] border border-[#f4f1ea]/10 text-[11px] text-[#d5d0c5]">
-                      <MapPin className="w-3 h-3 text-[#e5b85b]" />
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#e5b85b]" />
                       {focusedExhibit.location}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#181822] border border-[#f4f1ea]/10 text-[11px] text-[#d5d0c5]">
-                      <Layers className="w-3 h-3 text-[#e5b85b]" />
+                    <span className="inline-flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-[#e5b85b]" />
                       {focusedExhibit.mediumOrMaterial.split(';')[0]}
                     </span>
                   </div>
 
-                  {/* Curatorial Description */}
-                  <div className="space-y-3 text-xs sm:text-sm text-[#e6e1d6]/90 leading-relaxed">
+                  {/* Clean Wall Description */}
+                  <div className="space-y-3 text-sm sm:text-[15px] text-[#e8e3d8]/92 leading-relaxed max-w-lg">
                     <p>{focusedExhibit.introduction}</p>
                     {focusedExhibit.story.paragraphs[0] && (
-                      <p className="text-[#a39e93] line-clamp-3">
+                      <p className="text-[#c5c0b7] text-xs sm:text-sm leading-relaxed">
                         {focusedExhibit.story.paragraphs[0]}
                       </p>
                     )}
                   </div>
 
-                  {/* Primary CTA Beneath Description */}
-                  <div className="pt-2">
+                  {/* Primary CTA Directly Beneath the Wall Text */}
+                  <div className="pt-3 max-w-md">
                     <button
                       onClick={() => onSelectExhibit(focusedExhibit)}
-                      className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full bg-[#e5b85b] hover:bg-[#f0c770] text-[#09090c] text-xs sm:text-sm font-bold tracking-wide transition-all cursor-pointer shadow-[0_10px_30px_rgba(229,184,91,0.28)]"
+                      className="w-full inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-full bg-[#e5b85b] hover:bg-[#f0c770] text-[#09090c] text-xs sm:text-sm font-bold uppercase tracking-[0.16em] transition-all cursor-pointer shadow-[0_14px_34px_rgba(0,0,0,0.35)]"
                     >
                       <Play className="w-4 h-4 fill-current" />
                       <span>Enter Living Stage</span>
@@ -803,7 +790,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

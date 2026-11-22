@@ -8,7 +8,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description:
       'Iconic canvases of light, mystery and emotion—from the Mona Lisa to The Starry Night.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/960px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg',
     featuredArtworkTitle: 'Mona Lisa · Leonardo da Vinci',
   },
   {
@@ -18,7 +18,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description:
       'Marble and limestone carved into living breath by Michelangelo, Thutmose and antiquity’s masters.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/%27David%27_by_Michelangelo_Fir_JBU005_denoised.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/%27David%27_by_Michelangelo_Fir_JBU005_denoised.jpg/960px-%27David%27_by_Michelangelo_Fir_JBU005_denoised.jpg',
     featuredArtworkTitle: 'David · Michelangelo',
   },
   {
@@ -28,7 +28,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description:
       'Colossal desert pyramids and rock-cut sanctuaries that defied time.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/All_Gizah_Pyramids.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/All_Gizah_Pyramids.jpg/960px-All_Gizah_Pyramids.jpg',
     featuredArtworkTitle: 'Great Pyramids of Giza',
   },
   {
@@ -38,7 +38,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description:
       'Impossible domes, white marble mausoleums and classical temples.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/Taj_Mahal_in_India_-_Kristian_Bertel.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Taj_Mahal_in_India_-_Kristian_Bertel.jpg/960px-Taj_Mahal_in_India_-_Kristian_Bertel.jpg',
     featuredArtworkTitle: 'The Taj Mahal · Agra',
   },
   {
@@ -48,7 +48,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description:
       'Solid-gold pharaonic masks and ancient keys that unlocked lost worlds.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/CairoEgMuseumTaaMaskMostlyPhotographed.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/CairoEgMuseumTaaMaskMostlyPhotographed.jpg/960px-CairoEgMuseumTaaMaskMostlyPhotographed.jpg',
     featuredArtworkTitle: 'Mask of Tutankhamun',
   },
   {
@@ -58,7 +58,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description:
       'Foundational epics and novels that shaped human imagination.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/John_William_Waterhouse_-_Ulysses_and_the_Sirens_(1891).jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8d/John_William_Waterhouse_-_Ulysses_and_the_Sirens_%281891%29.jpg/960px-John_William_Waterhouse_-_Ulysses_and_the_Sirens_%281891%29.jpg',
     featuredArtworkTitle: 'The Odyssey · Homer',
   },
 ];
@@ -73,7 +73,7 @@ export const CURATED_COLLECTIONS: CuratedCollection[] = [
     curatorNote:
       'Every brushstroke in this room challenged convention, turning observation into revelation.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/960px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
     exhibitIds: [
       'the-starry-night',
       'mona-lisa',
@@ -92,7 +92,7 @@ export const CURATED_COLLECTIONS: CuratedCollection[] = [
     curatorNote:
       'Built without modern machinery yet aligned with the stars, these sites stand between engineering and myth.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/All_Gizah_Pyramids.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/All_Gizah_Pyramids.jpg/960px-All_Gizah_Pyramids.jpg',
     exhibitIds: [
       'pyramids-of-giza',
       'mask-of-tutankhamun',
@@ -110,7 +110,7 @@ export const CURATED_COLLECTIONS: CuratedCollection[] = [
     curatorNote:
       'To carve marble is to remove everything that is not alive.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/Victoire_de_Samothrace_-_Musee_du_Louvre_-_20190812.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Victoire_de_Samothrace_-_Musee_du_Louvre_-_20190812.jpg/960px-Victoire_de_Samothrace_-_Musee_du_Louvre_-_20190812.jpg',
     exhibitIds: [
       'michelangelos-david',
       'winged-victory-of-samothrace',
@@ -127,7 +127,7 @@ export const CURATED_COLLECTIONS: CuratedCollection[] = [
     curatorNote:
       'Architecture is history you can stand inside.',
     coverImage:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/Taj_Mahal_in_India_-_Kristian_Bertel.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Taj_Mahal_in_India_-_Kristian_Bertel.jpg/960px-Taj_Mahal_in_India_-_Kristian_Bertel.jpg',
     exhibitIds: ['taj-mahal', 'the-pantheon-rome', 'the-parthenon', 'petra-al-khazneh'],
   },
 ];
@@ -206,7 +206,7 @@ export const EXHIBITS: Exhibit[] = [
       'In 2004, NASA’s Hubble Space Telescope captured swirls of interstellar dust around star V838 Monocerotis that uncannily mirrored the painting.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/960px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
       aspectRatio: 'landscape',
     },
     atmosphere: {
@@ -300,7 +300,7 @@ export const EXHIBITS: Exhibit[] = [
       'High-resolution scans in 2007 proved Leonardo originally painted delicate eyelashes and eyebrows that faded over centuries of early cleaning.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/960px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg',
       aspectRatio: 'portrait',
     },
     atmosphere: {
@@ -385,7 +385,7 @@ export const EXHIBITS: Exhibit[] = [
       'The entire massive figure of Adam was painted in just four days (four plaster "giornate" sessions) without a single correction.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo_-_Creation_of_Adam_(cropped).jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg/960px-Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg',
       aspectRatio: 'landscape',
     },
     atmosphere: {
@@ -468,7 +468,7 @@ export const EXHIBITS: Exhibit[] = [
       'Because natural pearls of that colossal teardrop size rarely existed in the 1660s, the earring was likely polished Venetian glass or varnished silver.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/1665_Girl_with_a_Pearl_Earring.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/1665_Girl_with_a_Pearl_Earring.jpg/960px-1665_Girl_with_a_Pearl_Earring.jpg',
       aspectRatio: 'portrait',
     },
     atmosphere: {
@@ -551,7 +551,7 @@ export const EXHIBITS: Exhibit[] = [
       'A close inspection of David’s eyes reveals his left and right pupils point at slightly different angles so his gaze looks piercing from multiple viewpoints.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/%27David%27_by_Michelangelo_Fir_JBU005_denoised.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/%27David%27_by_Michelangelo_Fir_JBU005_denoised.jpg/960px-%27David%27_by_Michelangelo_Fir_JBU005_denoised.jpg',
       aspectRatio: 'portrait',
     },
     atmosphere: {
@@ -634,7 +634,7 @@ export const EXHIBITS: Exhibit[] = [
       'Despite scorching desert heat outside, the interior temperature of the Great Pyramid remains a constant 20°C (68°F) year-round.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/All_Gizah_Pyramids.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/All_Gizah_Pyramids.jpg/960px-All_Gizah_Pyramids.jpg',
       aspectRatio: 'landscape',
     },
     atmosphere: {
@@ -717,7 +717,7 @@ export const EXHIBITS: Exhibit[] = [
       'A single one-inch marble flower on the interior cenotaph screen contains over sixty inlaid slivers of semi-precious gemstone.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Taj_Mahal_in_India_-_Kristian_Bertel.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Taj_Mahal_in_India_-_Kristian_Bertel.jpg/960px-Taj_Mahal_in_India_-_Kristian_Bertel.jpg',
       aspectRatio: 'landscape',
     },
     atmosphere: {
@@ -800,7 +800,7 @@ export const EXHIBITS: Exhibit[] = [
       'X-ray studies revealed the mask uses two distinct gold alloys: 18.4-karat silver-gold for the face and 22.5-karat reddish gold for the headdress.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/CairoEgMuseumTaaMaskMostlyPhotographed.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/CairoEgMuseumTaaMaskMostlyPhotographed.jpg/960px-CairoEgMuseumTaaMaskMostlyPhotographed.jpg',
       aspectRatio: 'portrait',
     },
     atmosphere: {
@@ -879,7 +879,7 @@ export const EXHIBITS: Exhibit[] = [
       'The falling droplets of sea spray double as snowflakes drifting down onto Mount Fuji.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Tsunami_by_hokusai_19th_century.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Tsunami_by_hokusai_19th_century.jpg/960px-Tsunami_by_hokusai_19th_century.jpg',
       aspectRatio: 'landscape',
     },
     atmosphere: {
@@ -949,7 +949,7 @@ export const EXHIBITS: Exhibit[] = [
       'In 1950, archaeologists unearthed her open right hand—showing she was raising her palm in a gesture of greeting.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Victoire_de_Samothrace_-_Musee_du_Louvre_-_20190812.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Victoire_de_Samothrace_-_Musee_du_Louvre_-_20190812.jpg/960px-Victoire_de_Samothrace_-_Musee_du_Louvre_-_20190812.jpg',
       aspectRatio: 'portrait',
     },
     atmosphere: {
@@ -1019,7 +1019,7 @@ export const EXHIBITS: Exhibit[] = [
       'CT scans revealed a second, subtly different face carved into the inner limestone core beneath the outer stucco layer.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Nofretete_Neues_Museum.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/Nofretete_Neues_Museum.jpg/960px-Nofretete_Neues_Museum.jpg',
       aspectRatio: 'portrait',
     },
     atmosphere: {
@@ -1089,7 +1089,7 @@ export const EXHIBITS: Exhibit[] = [
       'Only 15% of the ancient city of Petra has been excavated; 85% still lies untouched beneath the desert floor.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Al_Khazneh_Petra_edit_2.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Al_Khazneh_Petra_edit_2.jpg/960px-Al_Khazneh_Petra_edit_2.jpg',
       aspectRatio: 'portrait',
     },
     atmosphere: {
@@ -1168,7 +1168,7 @@ export const EXHIBITS: Exhibit[] = [
       'When rain falls through the open oculus, twenty-two tiny holes in the subtly sloped marble floor drain it away immediately.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Pantheon_Rom_1_cropped.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Pantheon_Rom_1_cropped.jpg/960px-Pantheon_Rom_1_cropped.jpg',
       aspectRatio: 'landscape',
     },
     atmosphere: {
@@ -1238,7 +1238,7 @@ export const EXHIBITS: Exhibit[] = [
       'If you extended the axes of the Parthenon’s columns upward into the sky, they would meet at a single point 2.4 kilometers above Athens.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/The_Parthenon_in_Athens.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/da/The_Parthenon_in_Athens.jpg/960px-The_Parthenon_in_Athens.jpg',
       aspectRatio: 'landscape',
     },
     atmosphere: {
@@ -1308,7 +1308,7 @@ export const EXHIBITS: Exhibit[] = [
       'The Rosetta Stone is not basalt, but dark granodiorite threaded with a diagonal vein of pink granite.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Rosetta_Stone.JPG?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Rosetta_Stone.JPG/960px-Rosetta_Stone.JPG',
       aspectRatio: 'portrait',
     },
     atmosphere: {
@@ -1378,7 +1378,7 @@ export const EXHIBITS: Exhibit[] = [
       'Our everyday words "mentor," "siren" and "odyssey" all come directly from this single poem.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/John_William_Waterhouse_-_Ulysses_and_the_Sirens_(1891).jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8d/John_William_Waterhouse_-_Ulysses_and_the_Sirens_%281891%29.jpg/960px-John_William_Waterhouse_-_Ulysses_and_the_Sirens_%281891%29.jpg',
       aspectRatio: 'landscape',
     },
     atmosphere: {
@@ -1448,7 +1448,7 @@ export const EXHIBITS: Exhibit[] = [
       'The English word "quixotic" and the phrase "tilting at windmills" entered languages worldwide from Chapter VIII.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/Don_Quichotte_Honor%C3%A9_Daumier.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Don_Quichotte_Honor%C3%A9_Daumier.jpg/960px-Don_Quichotte_Honor%C3%A9_Daumier.jpg',
       aspectRatio: 'portrait',
     },
     atmosphere: {
@@ -1518,7 +1518,7 @@ export const EXHIBITS: Exhibit[] = [
       'Tucked into the far right edge looking directly out at the viewer is Raphael’s own self-portrait in a dark beret.',
     ],
     images: {
-      main: 'https://commons.wikimedia.org/wiki/Special:FilePath/%22The_School_of_Athens%22_by_Raffaello_Sanzio_da_Urbino.jpg?width=960',
+      main: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/%22The_School_of_Athens%22_by_Raffaello_Sanzio_da_Urbino.jpg/960px-%22The_School_of_Athens%22_by_Raffaello_Sanzio_da_Urbino.jpg',
       aspectRatio: 'landscape',
     },
     atmosphere: {
