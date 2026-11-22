@@ -19,7 +19,8 @@ export const Home: React.FC = () => {
 
   const initialExhibit = (id && getExhibitById(id)) || getFeaturedExhibit();
   const [activeExhibit, setActiveExhibit] = useState<Exhibit>(initialExhibit);
-  const [viewMode, setViewMode] = useState<MuseumViewMode>('stage');
+  // 3D Hall is the default Museum Homepage; Exhibit opens when exploring a portrait in detail (or via direct /exhibit/:id URL)
+  const [viewMode, setViewMode] = useState<MuseumViewMode>(id ? 'stage' : 'deck');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
@@ -53,6 +54,13 @@ export const Home: React.FC = () => {
     handleSelectExhibit(chosen);
   };
 
+  const handleChangeViewMode = (mode: MuseumViewMode) => {
+    setViewMode(mode);
+    if (mode === 'deck' && id) {
+      navigate('/', { replace: true });
+    }
+  };
+
   return (
     <div
       className="relative w-screen h-dvh overflow-hidden text-[#f4f1ea] select-none"
@@ -61,7 +69,7 @@ export const Home: React.FC = () => {
       {/* Floating App-Like Glass Navigation Bar */}
       <MuseumNavbar
         viewMode={viewMode}
-        onChangeViewMode={setViewMode}
+        onChangeViewMode={handleChangeViewMode}
         onShuffleExhibit={handleShuffleExhibit}
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenOnboarding={() => setIsOnboardingOpen(true)}

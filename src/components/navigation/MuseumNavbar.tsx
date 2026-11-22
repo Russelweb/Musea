@@ -55,9 +55,9 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
   return (
     <header className="fixed top-0 inset-x-0 z-40 px-4 sm:px-8 lg:px-12 pt-3.5 sm:pt-5 pointer-events-none">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        {/* Left: Airy Minimal Wordmark (Billabong / Grand Hotel Script) */}
+        {/* Left: Airy Minimal Wordmark (Returns to 3D Hall Homepage) */}
         <button
-          onClick={() => handleSelectMode('stage')}
+          onClick={() => handleSelectMode('deck')}
           className="pointer-events-auto group flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#111116]/60 backdrop-blur-2xl border border-[#f4f1ea]/10 hover:border-[#e5b85b]/50 transition-all cursor-pointer"
         >
           <span className="font-art-script text-2xl sm:text-3xl leading-none text-[#f4f1ea] pt-0.5">
@@ -66,23 +66,11 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
           <span className="w-1.5 h-1.5 rounded-full bg-[#e5b85b]" />
         </button>
 
-        {/* Center (Desktop Only): Airy Floating Glass Pill Capsule */}
+        {/* Center (Desktop Only): 3D Hall First · Gallery · Exhibit (only shown when viewing an exhibit) · Search */}
         <nav
           aria-label="Museum Experience Modes"
           className="pointer-events-auto hidden md:flex items-center gap-1 p-1.5 rounded-full bg-[#14141a]/65 backdrop-blur-2xl border border-[#f4f1ea]/12 shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
         >
-          <button
-            onClick={() => handleSelectMode('stage')}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
-              viewMode === 'stage'
-                ? 'bg-[#f4f1ea]/15 text-[#f4f1ea] border border-[#e5b85b]/45 shadow-sm'
-                : 'text-[#d5d0c5]/80 hover:text-[#f4f1ea] border border-transparent'
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5 text-[#e5b85b]" />
-            <span>Exhibit</span>
-          </button>
-
           <button
             onClick={() => handleSelectMode('deck')}
             className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
@@ -106,6 +94,16 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
             <LayoutGrid className="w-3.5 h-3.5 text-[#e5b85b]" />
             <span>Gallery</span>
           </button>
+
+          {viewMode === 'stage' && (
+            <button
+              onClick={() => handleSelectMode('stage')}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium bg-[#f4f1ea]/15 text-[#f4f1ea] border border-[#e5b85b]/45 shadow-sm cursor-pointer"
+            >
+              <Compass className="w-3.5 h-3.5 text-[#e5b85b]" />
+              <span>Exhibit</span>
+            </button>
+          )}
 
           <div className="w-[1px] h-4 bg-[#f4f1ea]/12 mx-1" />
 
@@ -175,18 +173,6 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
             className="pointer-events-auto md:hidden mt-2.5 ml-auto w-56 rounded-3xl bg-[#121218]/95 backdrop-blur-2xl border border-[#f4f1ea]/15 p-2.5 shadow-2xl space-y-1"
           >
             <button
-              onClick={() => handleSelectMode('stage')}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-semibold text-left transition-all ${
-                viewMode === 'stage'
-                  ? 'bg-[#e5b85b] text-[#09090c]'
-                  : 'text-[#d5d0c5] hover:bg-[#f4f1ea]/10'
-              }`}
-            >
-              <Compass className="w-4 h-4" />
-              <span>Exhibit</span>
-            </button>
-
-            <button
               onClick={() => handleSelectMode('deck')}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-semibold text-left transition-all ${
                 viewMode === 'deck'
@@ -209,6 +195,16 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
               <LayoutGrid className="w-4 h-4" />
               <span>Gallery</span>
             </button>
+
+            {viewMode === 'stage' && (
+              <button
+                onClick={() => handleSelectMode('stage')}
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-semibold text-left bg-[#e5b85b] text-[#09090c]"
+              >
+                <Compass className="w-4 h-4" />
+                <span>Exhibit</span>
+              </button>
+            )}
 
             <div className="h-[1px] bg-[#f4f1ea]/10 my-1" />
 
