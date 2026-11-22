@@ -527,14 +527,14 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
 
         if (isTouchMobile) {
-          // 70% priority for walking forward/backward (up/down), 30% gentle sensitivity for looking left/right
+          // 66% priority for walking forward/backward (up/down), 34% sensitivity for looking left/right
           const absDx = Math.abs(dx);
           const absDy = Math.abs(dy);
-          const walkWeight = absDy >= absDx * 0.65 ? 1.0 : 0.35;
-          const lookWeight = absDx > absDy * 1.2 ? 0.45 : 0.18;
+          const walkWeight = absDy >= absDx * 0.66 ? 1.0 : 0.34;
+          const lookWeight = absDx > absDy * 1.1 ? 0.52 : 0.24;
 
-          tgt = clamp(tgt + dy * 0.00072 * walkWeight);
-          yawT = Math.max(-1.05, Math.min(1.05, yawT + dx * 0.0024 * lookWeight));
+          tgt = clamp(tgt + dy * 0.00066 * walkWeight);
+          yawT = Math.max(-1.08, Math.min(1.08, yawT + dx * 0.0034 * lookWeight));
         } else {
           const primaryDelta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
           tgt = clamp(tgt - primaryDelta * 0.00052);
