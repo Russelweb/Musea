@@ -17,6 +17,7 @@ import { EXHIBITS } from '../../data/exhibits';
 import type { Exhibit } from '../../types/exhibit';
 import { buildExhibitChapters } from '../../lib/storyChapters';
 import { LivingArtworkCanvas } from '../exhibits/LivingArtworkCanvas';
+import { useLenisScroll } from '../../hooks/useLenisScroll';
 
 interface LivingStageViewProps {
   exhibit: Exhibit;
@@ -36,6 +37,13 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
   const [isPureArtMode, setIsPureArtMode] = useState(false);
   const [showFullDossierModal, setShowFullDossierModal] = useState(false);
   const [isAmbientSoundOn, setIsAmbientSoundOn] = useState(false);
+  const dossierScrollRef = useRef<HTMLDivElement>(null);
+  const dossierContentRef = useRef<HTMLDivElement>(null);
+
+  useLenisScroll(dossierScrollRef, dossierContentRef, {
+    enabled: showFullDossierModal,
+    lerp: 0.085,
+  });
 
   // Pure Web Audio API calm museum hall ambient soundscape (zero external files)
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -368,12 +376,14 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
             onClick={() => setShowFullDossierModal(false)}
           >
             <motion.div
+              ref={dossierScrollRef}
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 40, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl max-h-[82dvh] overflow-y-auto no-scrollbar rounded-t-3xl sm:rounded-3xl bg-[#121217] border border-[#f4f1ea]/15 p-6 sm:p-8 shadow-2xl space-y-5"
+              className="w-full max-w-2xl max-h-[82dvh] overflow-y-auto no-scrollbar rounded-t-3xl sm:rounded-3xl bg-[#121217] border border-[#f4f1ea]/15 p-6 sm:p-8 shadow-2xl"
             >
+              <div ref={dossierContentRef} className="space-y-5">
               <div className="flex items-start justify-between gap-4 border-b border-[#f4f1ea]/10 pb-4">
                 <div>
                   <span className="text-xs font-semibold text-[#e5b85b] block mb-1">
@@ -418,6 +428,7 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                     {exhibit.meaning.keyTakeaway}
                   </p>
                 </div>
+              </div>
               </div>
             </motion.div>
           </motion.div>

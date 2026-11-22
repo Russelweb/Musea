@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowUpRight, Compass, Sparkles } from 'lucide-react';
 import { CATEGORIES, EXHIBITS } from '../../data/exhibits';
 import type { Exhibit } from '../../types/exhibit';
+import { useLenisScroll } from '../../hooks/useLenisScroll';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -20,6 +21,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onSelectExhibit,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const resultsScrollRef = useRef<HTMLDivElement>(null);
+  const resultsContentRef = useRef<HTMLDivElement>(null);
+
+  useLenisScroll(resultsScrollRef, resultsContentRef, {
+    enabled: isOpen,
+    lerp: 0.09,
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -134,7 +142,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             </div>
 
             {/* Visual Overlaid Results Grid */}
-            <div className="max-h-[60vh] overflow-y-auto no-scrollbar p-4 sm:p-5">
+            <div
+              ref={resultsScrollRef}
+              className="max-h-[60vh] overflow-y-auto no-scrollbar p-4 sm:p-5"
+            >
+              <div ref={resultsContentRef}>
               <div className="pb-3 flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-[#a39e93]">
                 <span>
                   {query.trim()
@@ -173,6 +185,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                     </div>
                   </button>
                 ))}
+              </div>
               </div>
             </div>
           </motion.div>

@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Search, X, Sparkles, Check } from 'lucide-react';
 import { CATEGORIES, EXHIBITS, getTopIconicExhibits } from '../../data/exhibits';
 import type { Exhibit, ExhibitCategory } from '../../types/exhibit';
 import { ExhibitCard } from './ExhibitCard';
 import { ArtworkImage } from '../shared/ArtworkImage';
 import { MuseumSceneryBackdrop } from '../shared/MuseumSceneryBackdrop';
+import { useLenisScroll } from '../../hooks/useLenisScroll';
 
 interface BentoCollectionViewProps {
   onSelectExhibit: (exhibit: Exhibit) => void;
@@ -28,6 +29,10 @@ export const BentoCollectionView: React.FC<BentoCollectionViewProps> = ({
     ExhibitCategory | 'featured-8'
   >('featured-8');
   const [query, setQuery] = useState('');
+  const scrollWrapperRef = useRef<HTMLDivElement>(null);
+  const scrollContentRef = useRef<HTMLDivElement>(null);
+
+  useLenisScroll(scrollWrapperRef, scrollContentRef, { lerp: 0.08 });
 
   // Curated max-8 attention-pulling masterworks for the active selection
   const displayedExhibits = useMemo(() => {
@@ -53,9 +58,12 @@ export const BentoCollectionView: React.FC<BentoCollectionViewProps> = ({
   const activeCategoryMeta = CATEGORIES.find((c) => c.id === selectedCategory);
 
   return (
-    <div className="relative w-full h-full overflow-y-auto no-scrollbar pt-24 pb-20 px-4 sm:px-8 lg:px-12 bg-[#09090c]">
+    <div
+      ref={scrollWrapperRef}
+      className="relative w-full h-full overflow-y-auto no-scrollbar pt-24 pb-20 px-4 sm:px-8 lg:px-12 bg-[#09090c]"
+    >
       <MuseumSceneryBackdrop variant="stage" />
-      <div className="relative z-10 max-w-7xl mx-auto space-y-8">
+      <div ref={scrollContentRef} className="relative z-10 max-w-7xl mx-auto space-y-8">
         {/* 1. Header & Pinterest-Style Rounded Search Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

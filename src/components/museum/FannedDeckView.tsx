@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { CATEGORIES, EXHIBITS } from '../../data/exhibits';
 import type { Exhibit } from '../../types/exhibit';
+import { useLenisScroll } from '../../hooks/useLenisScroll';
 
 interface ScreenRect {
   left: number;
@@ -151,6 +152,13 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
   const focusedExhibit = focusedSelection?.exhibit ?? null;
   const focusTimerRef = useRef<number | null>(null);
   const targetArtRef = useRef<HTMLDivElement>(null);
+  const wallScrollRef = useRef<HTMLDivElement>(null);
+  const wallContentRef = useRef<HTMLDivElement>(null);
+
+  useLenisScroll(wallScrollRef, wallContentRef, {
+    enabled: Boolean(focusedExhibit),
+    lerp: 0.08,
+  });
   const [flipOrigin, setFlipOrigin] = useState<{ x: number; y: number; scale: number }>({
     x: 40,
     y: 0,
@@ -828,6 +836,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       <AnimatePresence>
         {focusedExhibit && (
           <motion.div
+            ref={wallScrollRef}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -852,7 +861,10 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
             </motion.button>
 
             {/* Full-Wall Split Presentation: Artwork Smoothly Resizes From 3D Wall Position While Text Slides In Simultaneously */}
-            <div className="min-h-full w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 pt-32 pb-16 flex items-center">
+            <div
+              ref={wallContentRef}
+              className="min-h-full w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 pt-32 pb-16 flex items-center"
+            >
               <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-center">
                 {/* LEFT: Artwork Morphs & Resizes Smoothly From Exact 3D Screen Rect Into View-Mode Size */}
                 <div className="md:col-span-6 flex flex-col items-center">
