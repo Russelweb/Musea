@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play,
@@ -10,6 +10,8 @@ import {
   BookOpen,
   ArrowRight,
   Sparkles,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { EXHIBITS } from '../../data/exhibits';
 import type { Exhibit } from '../../types/exhibit';
@@ -22,7 +24,7 @@ interface LivingStageViewProps {
   onOpenCollection: () => void;
 }
 
-const AUTO_TOUR_DURATION_MS = 8000;
+const AUTO_TOUR_DURATION_MS = 8500;
 
 export const LivingStageView: React.FC<LivingStageViewProps> = ({
   exhibit,
@@ -33,6 +35,78 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
   const [isAutoTourPlaying, setIsAutoTourPlaying] = useState(true);
   const [isPureArtMode, setIsPureArtMode] = useState(false);
   const [showFullDossierModal, setShowFullDossierModal] = useState(false);
+  const [isAmbientSoundOn, setIsAmbientSoundOn] = useState(false);
+
+  // Pure Web Audio API calm museum hall ambient soundscape (zero external files)
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
+
+  const toggleAmbientSound = () => {
+    if (!isAmbientSoundOn) {
+      try {
+        const AudioCtx =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext;
+        if (!audioCtxRef.current) {
+          const ctx = new AudioCtx();
+          const master = ctx.createGain();
+          master.gain.value = 0.0001;
+
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 420;
+
+          // Warm resonant D-major9 meditative museum chord (D2, A2, E3, F#3)
+          const freqs = [73.42, 110.0, 164.81, 185.0];
+          freqs.forEach((f, idx) => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+            osc.frequency.value = f;
+            g.gain.value = idx === 0 ? 0.25 : 0.12;
+            osc.connect(g);
+            g.connect(filter);
+            osc.start();
+          });
+
+          filter.connect(master);
+          master.connect(ctx.destination);
+          audioCtxRef.current = ctx;
+          masterGainRef.current = master;
+        }
+        if (audioCtxRef.current.state === 'suspended') {
+          audioCtxRef.current.resume();
+        }
+        masterGainRef.current?.gain.setTargetAtTime(
+          0.06,
+          audioCtxRef.current.currentTime,
+          0.8
+        );
+        setIsAmbientSoundOn(true);
+      } catch {
+        // AudioContext unavailable
+      }
+    } else {
+      if (audioCtxRef.current && masterGainRef.current) {
+        masterGainRef.current.gain.setTargetAtTime(
+          0.0001,
+          audioCtxRef.current.currentTime,
+          0.5
+        );
+      }
+      setIsAmbientSoundOn(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close().catch(() => {});
+        audioCtxRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     setChapterIndex(0);
@@ -46,6 +120,19 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
     }, AUTO_TOUR_DURATION_MS);
     return () => clearInterval(timer);
   }, [isAutoTourPlaying, chapters.length, chapterIndex, showFullDossierModal]);
+
+  // Preload next & previous exhibit images in background for instant switching
+  const currentIdx = EXHIBITS.findIndex((e) => e.id === exhibit.id);
+  useEffect(() => {
+    const next = EXHIBITS[(currentIdx + 1) % EXHIBITS.length];
+    const prev = EXHIBITS[(currentIdx - 1 + EXHIBITS.length) % EXHIBITS.length];
+    [next, prev].forEach((item) => {
+      if (item) {
+        const img = new Image();
+        img.src = item.images.main;
+      }
+    });
+  }, [currentIdx]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -65,7 +152,6 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
   }, [chapters.length]);
 
   const activeChapter = chapters[chapterIndex] || chapters[0];
-  const currentIdx = EXHIBITS.findIndex((e) => e.id === exhibit.id);
 
   const handleNextExhibit = () => {
     const next = EXHIBITS[(currentIdx + 1) % EXHIBITS.length];
@@ -83,12 +169,14 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none bg-[#08080b]">
-      {/* 1. FULL-STAGE LIVING ARTWORK CANVAS (Dominates the desktop & mobile screen!) */}
+      {/* 1. SCULPTED EXHIBIT ROOM CANVAS (3D Frame, Spotlight, Dust Motes & Focal Ring) */}
       <div className="absolute inset-0 w-full h-full">
         <LivingArtworkCanvas
           exhibit={exhibit}
           activeChapter={activeChapter}
           isPureArtMode={isPureArtMode}
+          onSwipeNext={handleNextExhibit}
+          onSwipePrev={handlePrevExhibit}
         />
       </div>
 
@@ -96,7 +184,7 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
       <button
         onClick={handlePrevExhibit}
         className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#121217]/60 hover:bg-[#e5b85b] text-[#f4f1ea]/85 hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/12 flex items-center justify-center transition-all cursor-pointer shadow-lg"
-        title="Previous Masterpiece"
+        title="Previous Artwork"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
@@ -104,17 +192,35 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
       <button
         onClick={handleNextExhibit}
         className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#121217]/60 hover:bg-[#e5b85b] text-[#f4f1ea]/85 hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/12 flex items-center justify-center transition-all cursor-pointer shadow-lg"
-        title="Next Masterpiece"
+        title="Next Artwork"
       >
         <ChevronRight className="w-5 h-5" />
       </button>
 
-      {/* Minimal Floating Full-Screen Toggle in Bottom-Right Corner */}
-      <div className="absolute bottom-4 right-4 sm:right-7 z-40">
+      {/* Bottom-Right Ambient Room Controls: Sound & Full-Screen */}
+      <div className="absolute bottom-4 right-4 sm:right-7 z-40 flex items-center gap-2">
+        <button
+          onClick={toggleAmbientSound}
+          className={`p-2.5 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg ${
+            isAmbientSoundOn
+              ? 'bg-[#e5b85b]/20 border-[#e5b85b]/60 text-[#e5b85b]'
+              : 'bg-[#141419]/75 border-[#f4f1ea]/15 hover:border-[#e5b85b] text-[#d5d0c5] hover:text-[#f4f1ea]'
+          }`}
+          title={isAmbientSoundOn ? 'Mute Gallery Ambiance' : 'Play Gallery Ambiance'}
+          aria-label="Toggle gallery ambient sound"
+        >
+          {isAmbientSoundOn ? (
+            <Volume2 className="w-4 h-4" />
+          ) : (
+            <VolumeX className="w-4 h-4" />
+          )}
+        </button>
+
         <button
           onClick={() => setIsPureArtMode((p) => !p)}
           className="p-2.5 rounded-full bg-[#141419]/75 backdrop-blur-xl border border-[#f4f1ea]/15 hover:border-[#e5b85b] text-[#d5d0c5] hover:text-[#f4f1ea] transition-all cursor-pointer shadow-lg"
-          title={isPureArtMode ? 'Show Story' : 'Pure Art View'}
+          title={isPureArtMode ? 'Show Story' : 'Full Screen Art'}
+          aria-label="Toggle full screen artwork view"
         >
           {isPureArtMode ? (
             <Minimize2 className="w-4 h-4 text-[#e5b85b]" />
@@ -124,7 +230,7 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
         </button>
       </div>
 
-      {/* 2. SLEEK, COMPACT FLOATING STORY SPOTLIGHT AT BOTTOM (Lets the Artwork Command the Screen) */}
+      {/* 2. SLEEK, COMPACT FLOATING STORY SPOTLIGHT AT BOTTOM */}
       <AnimatePresence>
         {!isPureArtMode && (
           <motion.div
@@ -134,8 +240,8 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
             transition={{ duration: 0.35 }}
             className="absolute inset-x-0 bottom-3 sm:bottom-4 z-30 px-4 sm:px-8 pointer-events-none"
           >
-            <div className="pointer-events-auto max-w-2xl mx-auto rounded-3xl bg-[#0e0e14]/82 backdrop-blur-2xl border border-[#f4f1ea]/14 px-5 sm:px-7 py-3 sm:py-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
-              {/* Top Row: Chapter Badge · Title · Progress Dots · Controls */}
+            <div className="pointer-events-auto max-w-2xl mx-auto rounded-3xl bg-[#0e0e14]/84 backdrop-blur-2xl border border-[#f4f1ea]/14 px-5 sm:px-7 py-3 sm:py-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
+              {/* Top Row: Chapter Badge · Title · Step Dots */}
               <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#e5b85b]/15 border border-[#e5b85b]/40 text-[#f3cf8a] text-[10px] font-bold uppercase tracking-wider shrink-0">
@@ -150,7 +256,6 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                   </span>
                 </div>
 
-                {/* Soft Step Dots */}
                 <div className="flex items-center gap-1.5">
                   {chapters.map((chap, idx) => {
                     const isCurrent = idx === chapterIndex;
@@ -170,15 +275,15 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                 </div>
               </div>
 
-              {/* Compact, Magnetic Story Moment */}
-              <div className="min-h-[58px] sm:min-h-[62px] flex flex-col justify-center">
+              {/* Story Moment */}
+              <div className="min-h-[60px] sm:min-h-[64px] flex flex-col justify-center">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`${exhibit.id}-${activeChapter.id}`}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.28 }}
+                    transition={{ duration: 0.3 }}
                   >
                     <h2 className="font-art-script text-2xl sm:text-3xl text-[#fdfbf7] leading-tight mb-0.5">
                       {activeChapter.heading}
@@ -190,9 +295,9 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                 </AnimatePresence>
               </div>
 
-              {/* Bottom Micro Bar: Auto Progress + Quick Actions */}
+              {/* Bottom Micro Bar: Simplified Controls */}
               <div className="mt-2.5 pt-2 border-t border-[#f4f1ea]/8 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <button
                     onClick={() => setIsAutoTourPlaying((p) => !p)}
                     className="inline-flex items-center gap-1 text-[11px] font-medium text-[#d5d0c5] hover:text-[#f4f1ea] transition-colors cursor-pointer"
@@ -217,7 +322,7 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                     className="inline-flex items-center gap-1 text-[11px] font-medium text-[#d5d0c5] hover:text-[#e5b85b] transition-colors cursor-pointer"
                   >
                     <BookOpen className="w-3 h-3 text-[#e5b85b]" />
-                    <span>Full Story</span>
+                    <span>Read Story</span>
                   </button>
                 </div>
 
@@ -241,9 +346,9 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
 
                 <button
                   onClick={handleNextChapter}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#e5b85b]/15 hover:bg-[#e5b85b] text-[#f3cf8a] hover:text-[#09090c] border border-[#e5b85b]/35 text-[11px] font-semibold transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1 px-3.5 py-1 rounded-full bg-[#e5b85b]/15 hover:bg-[#e5b85b] text-[#f3cf8a] hover:text-[#09090c] border border-[#e5b85b]/35 text-[11px] font-semibold transition-all cursor-pointer"
                 >
-                  <span>Next Insight</span>
+                  <span>Next</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -252,7 +357,7 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Slide-Up Full Story Modal */}
+      {/* Slide-Up Full Story Overlay */}
       <AnimatePresence>
         {showFullDossierModal && (
           <motion.div
@@ -307,7 +412,7 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                 ))}
                 <div className="p-4 rounded-2xl bg-[#181820] border border-[#e5b85b]/30">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#e5b85b] block mb-1">
-                    Key Significance
+                    Why It Matters
                   </span>
                   <p className="text-sm text-[#f4f1ea] font-medium">
                     {exhibit.meaning.keyTakeaway}

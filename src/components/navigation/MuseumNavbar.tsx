@@ -21,8 +21,8 @@ interface MuseumNavbarProps {
 }
 
 const MODE_LABELS: Record<MuseumViewMode, string> = {
-  stage: 'Living Stage',
-  deck: '3D Deck',
+  stage: 'Exhibit',
+  deck: '3D Hall',
   collection: 'Gallery',
 };
 
@@ -80,7 +80,7 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
             }`}
           >
             <Compass className="w-3.5 h-3.5 text-[#e5b85b]" />
-            <span>Living Stage</span>
+            <span>Exhibit</span>
           </button>
 
           <button
@@ -92,7 +92,7 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
             }`}
           >
             <Layers className="w-3.5 h-3.5 text-[#e5b85b]" />
-            <span>3D Deck</span>
+            <span>3D Hall</span>
           </button>
 
           <button
@@ -124,9 +124,9 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
             <button
               onClick={onOpenOnboarding}
               className="px-3.5 py-2 rounded-full bg-[#14141a]/65 hover:bg-[#1e1e28] text-[#d5d0c5] hover:text-[#f4f1ea] backdrop-blur-2xl border border-[#f4f1ea]/12 text-xs font-medium transition-all cursor-pointer"
-              title="View Welcome Tour"
+              title="Museum Guide"
             >
-              Intro Tour
+              Guide
             </button>
           )}
 
@@ -135,7 +135,7 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#14141a]/65 hover:bg-[#e5b85b] text-[#e5b85b] hover:text-[#09090c] backdrop-blur-2xl border border-[#e5b85b]/35 text-xs font-semibold transition-all cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Shuffle Art</span>
+            <span>Surprise</span>
           </button>
         </div>
 
@@ -183,7 +183,7 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
               }`}
             >
               <Compass className="w-4 h-4" />
-              <span>Living Stage</span>
+              <span>Exhibit</span>
             </button>
 
             <button
@@ -195,7 +195,7 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
               }`}
             >
               <Layers className="w-4 h-4" />
-              <span>3D Deck</span>
+              <span>3D Hall</span>
             </button>
 
             <button
@@ -207,7 +207,7 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
               }`}
             >
               <LayoutGrid className="w-4 h-4" />
-              <span>Gallery & Categories</span>
+              <span>Gallery</span>
             </button>
 
             <div className="h-[1px] bg-[#f4f1ea]/10 my-1" />
@@ -221,7 +221,7 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
                 className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-semibold text-[#d5d0c5] hover:bg-[#f4f1ea]/10 text-left transition-all"
               >
                 <Compass className="w-4 h-4 text-[#e5b85b]" />
-                <span>Welcome & Tour</span>
+                <span>Guide</span>
               </button>
             )}
 
@@ -233,7 +233,7 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
               className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-semibold text-[#e5b85b] hover:bg-[#e5b85b]/15 text-left transition-all"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Shuffle Random Art</span>
+              <span>Surprise Me</span>
             </button>
           </motion.div>
         )}

@@ -30,28 +30,28 @@ const ONBOARDING_SLIDES: OnboardingSlide[] = [
   },
   {
     id: 'slide-2',
-    badge: 'LIVING STAGE',
+    badge: 'EXHIBIT ROOM',
     artworkTitle: 'The Creation of Adam',
     artist: 'MICHELANGELO BUONARROTI',
     location: 'Sistine Chapel, Vatican City',
     headline: 'Art That Moves And Breathes',
     subheadline:
-      'No endless scrolling away from the canvas. Smooth cinema cameras glide, zoom, and unveil hidden details while the story comes directly to you.',
+      'No scrolling away from the canvas. Watch smooth gallery lighting and focus rings unveil hidden details while the story comes directly to you.',
     image:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo_-_Creation_of_Adam_(cropped).jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg/960px-Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg',
     accent: '#E0B26B',
   },
   {
     id: 'slide-3',
-    badge: '3D DECK & GALLERY',
+    badge: '3D HALL & GALLERY',
     artworkTitle: 'The Starry Night',
     artist: 'VINCENT VAN GOGH',
     location: 'MoMA, New York',
-    headline: 'Curated For Pure Enjoyment',
+    headline: 'Walk Through The Museum',
     subheadline:
-      'Switch seamlessly between the cinematic Living Stage, the spatial 3D Deck, and our calm Pinterest-style gallery collections.',
+      'Stroll down our 3D Museum Hall, inspect any framed work up close on the wall, or browse our curated Gallery by category.',
     image:
-      'https://commons.wikimedia.org/wiki/Special:FilePath/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg?width=960',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/960px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
     accent: '#E2B857',
   },
 ];

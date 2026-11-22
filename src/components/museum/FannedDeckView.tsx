@@ -507,18 +507,30 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (window.innerWidth >= 640) {
-        yawT = -(e.clientX / window.innerWidth - 0.5) * 0.42;
+      const isTouchMobile = window.innerWidth < 640 || e.pointerType === 'touch';
+
+      if (!isTouchMobile) {
+        yawT = -(e.clientX / window.innerWidth - 0.5) * 0.45;
       }
+
       if (dragStartX !== null && dragStartY !== null && focus < 0) {
         const dx = e.clientX - dragStartX;
         const dy = e.clientY - dragStartY;
         if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
-        const primaryDelta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
-        tgt = clamp(tgt - primaryDelta * 0.00052);
+
+        if (isTouchMobile) {
+          // On mobile/touch: horizontal swipe turns your head left/right to inspect portraits on both walls;
+          // vertical swipe walks smoothly forward and backward down the corridor!
+          yawT = Math.max(-1.28, Math.min(1.28, yawT + dx * 0.0068));
+          tgt = clamp(tgt + dy * 0.00048);
+        } else {
+          const primaryDelta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
+          tgt = clamp(tgt - primaryDelta * 0.00052);
+        }
+
         dragStartX = e.clientX;
         dragStartY = e.clientY;
-      } else if (focus < 0) {
+      } else if (focus < 0 && !isTouchMobile) {
         hov = pick(e.clientX, e.clientY);
         dom.style.cursor = hov >= 0 ? 'pointer' : 'grab';
       }
@@ -603,6 +615,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       },
       jumpToExhibitIndex: (idx: number) => {
         focus = -1;
+        yawT = 0;
         setFocusedSelection(null);
         if (ts[idx] !== undefined) {
           tgt = clamp(ts[idx] - 0.042);
@@ -776,9 +789,14 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
               })}
             </div>
 
-            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[#d5d0c5]/80">
-              <MoveHorizontal className="w-3 h-3 text-[#e5b85b]" />
-              <span>Scroll or drag to walk · Click any painting to step closer</span>
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[#d5d0c5]/80 text-center">
+              <MoveHorizontal className="w-3 h-3 text-[#e5b85b] shrink-0" />
+              <span className="sm:hidden">
+                Swipe up/down to walk · Left/right to look · Tap art
+              </span>
+              <span className="hidden sm:inline">
+                Scroll or drag to walk · Click any artwork to view
+              </span>
             </div>
           </motion.div>
         )}
@@ -830,7 +848,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
               className="fixed top-20 left-5 sm:left-10 z-40 inline-flex items-center gap-2 text-xs font-medium text-[#d5d0c5] hover:text-[#f4f1ea] transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-[#e5b85b]" />
-              <span>Back to gallery</span>
+              <span>Back to 3D Hall</span>
             </motion.button>
 
             {/* Full-Wall Split Presentation: Artwork Smoothly Resizes From 3D Wall Position While Text Slides In Simultaneously */}
@@ -936,7 +954,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                       className="w-full inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-full bg-[#e5b85b] hover:bg-[#f0c770] text-[#09090c] text-xs sm:text-sm font-bold uppercase tracking-[0.16em] transition-all cursor-pointer shadow-[0_14px_34px_rgba(0,0,0,0.35)]"
                     >
                       <Play className="w-4 h-4 fill-current" />
-                      <span>Enter Living Stage</span>
+                      <span>Open Exhibit</span>
                     </button>
                   </div>
                 </motion.div>

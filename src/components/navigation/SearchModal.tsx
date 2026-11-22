@@ -138,10 +138,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               <div className="pb-3 flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-[#a39e93]">
                 <span>
                   {query.trim()
-                    ? `Found ${filteredExhibits.length} Masterwork${filteredExhibits.length === 1 ? '' : 's'}`
-                    : 'Instant Stage Jump'}
+                    ? `Found ${filteredExhibits.length} Artwork${filteredExhibits.length === 1 ? '' : 's'}`
+                    : 'Quick Jump'}
                 </span>
-                <span>Click to enter Living Stage</span>
+                <span>Select any artwork</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
