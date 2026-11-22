@@ -278,6 +278,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     textures.push(poolTex);
 
     const meshes: THREE.Mesh[] = [];
+    const focusPositions: THREE.Vector3[] = [];
     const ts: number[] = [];
     const N = hallExhibits.length;
 
@@ -331,6 +332,14 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       artMesh.userData.i = i;
       scene.add(artMesh);
       meshes.push(artMesh);
+
+      // Compute exact perpendicular camera dolly position directly in front of this painting
+      const dollyDist = isPortrait ? 3.1 : 3.25;
+      const focusCamPos = wp
+        .clone()
+        .addScaledVector(n, -side * dollyDist)
+        .setY(2.26);
+      focusPositions.push(focusCamPos);
 
       // 3D Museum Frame + Subtle Gold Lip
       const trimGeo = new THREE.BoxGeometry(artW + 0.06, artH + 0.06, 0.03);
@@ -410,10 +419,14 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     let moved = false;
     let rafId = 0;
 
+    const camPosCur = new THREE.Vector3();
+    const camPosTarget = new THREE.Vector3();
     const lookAtCur = new THREE.Vector3();
     const lookAtTarget = new THREE.Vector3();
     const tmpPos = new THREE.Vector3();
-    let lookInitialized = false;
+    let camInitialized = false;
+    let baseFov = W < 640 ? 70 : 60;
+    let curFov = baseFov;
 
     const ray = new THREE.Raycaster();
     const mp = new THREE.Vector2();
@@ -469,11 +482,11 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         const i = pick(e.clientX, e.clientY);
         if (i >= 0) {
           focus = i;
-          tgt = clamp(ts[i] - 0.022);
+          tgt = clamp(ts[i] - 0.015);
           if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
           focusTimerRef.current = window.setTimeout(() => {
             setFocusedExhibit(hallExhibits[i]);
-          }, 760);
+          }, 680);
         }
       }
     };
@@ -483,7 +496,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       W = el.clientWidth || window.innerWidth;
       H = el.clientHeight || window.innerHeight;
       renderer.setSize(W, H);
-      cam.fov = W < 640 ? 70 : 60;
+      baseFov = W < 640 ? 70 : 60;
       cam.aspect = W / H;
       cam.updateProjectionMatrix();
     };
@@ -525,23 +538,39 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
 
       const safeCur = Math.max(0.001, Math.min(0.999, cur));
       const p = curve.getPointAt(safeCur);
-      cam.position.set(p.x, 1.72 + Math.sin(safeCur * 420) * 0.011, p.z);
 
-      if (focus >= 0 && meshes[focus]) {
+      if (focus >= 0 && meshes[focus] && focusPositions[focus]) {
+        // Dolly camera off the spline directly in front of the selected artwork
+        camPosTarget.copy(focusPositions[focus]);
         meshes[focus].getWorldPosition(tmpPos);
         lookAtTarget.copy(tmpPos);
       } else {
+        camPosTarget.set(p.x, 1.72 + Math.sin(safeCur * 420) * 0.011, p.z);
         const q = curve.getPointAt(Math.min(0.999, safeCur + 0.032));
         lookAtTarget.set(q.x, 1.78, q.z);
       }
 
-      if (!lookInitialized) {
+      if (!camInitialized) {
+        camPosCur.copy(camPosTarget);
         lookAtCur.copy(lookAtTarget);
-        lookInitialized = true;
+        camInitialized = true;
       } else {
-        lookAtCur.lerp(lookAtTarget, focus >= 0 ? 0.09 : 0.12);
+        // Silky dolly-in & step-back interpolation
+        const posEase = focus >= 0 ? 0.075 : 0.085;
+        const lookEase = focus >= 0 ? 0.085 : 0.095;
+        camPosCur.lerp(camPosTarget, posEase);
+        lookAtCur.lerp(lookAtTarget, lookEase);
       }
 
+      // Subtle cinema telephoto lens pull when approaching a painting, widening back when stepping out
+      const targetFov = focus >= 0 ? baseFov - 11 : baseFov;
+      if (Math.abs(targetFov - curFov) > 0.02) {
+        curFov += (targetFov - curFov) * 0.075;
+        cam.fov = curFov;
+        cam.updateProjectionMatrix();
+      }
+
+      cam.position.copy(camPosCur);
       cam.lookAt(lookAtCur);
       if (focus < 0) {
         cam.rotateY(yaw);
@@ -687,41 +716,50 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         </div>
       )}
 
-      {/* 3. FULL-SCREEN ON-THE-WALL CURATORIAL VIEW (No Modal Box! Matches the HTML prototype's seamless wall surface) */}
+      {/* 3. FULL-SCREEN ON-THE-WALL CURATORIAL VIEW (Silky Cinema In & Out Choreography) */}
       <AnimatePresence>
         {focusedExhibit && (
           <motion.div
-            initial={{ opacity: 0, scale: 1.035 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-30 overflow-y-auto no-scrollbar cursor-default"
             style={{
               background:
-                'radial-gradient(ellipse 80% 60% at 34% 42%, rgba(244, 214, 152, 0.12) 0%, transparent 65%), linear-gradient(180deg, #32313a 0%, #26252d 55%, #1d1c23 100%)',
+                'radial-gradient(ellipse 80% 60% at 34% 42%, rgba(244, 214, 152, 0.14) 0%, transparent 65%), linear-gradient(180deg, #32313a 0%, #26252d 55%, #1d1c23 100%)',
             }}
           >
-            {/* Minimal On-Wall Back Button (Like ".back" in the reference HTML) */}
-            <button
+            {/* Minimal On-Wall Back Button */}
+            <motion.button
+              initial={{ opacity: 0, x: -14 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.4, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
               onClick={handleReturnToHall}
               className="fixed top-20 left-5 sm:left-10 z-40 inline-flex items-center gap-2 text-xs font-medium text-[#d5d0c5] hover:text-[#f4f1ea] transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-[#e5b85b]" />
               <span>Back to gallery</span>
-            </button>
+            </motion.button>
 
-            {/* Full-Wall Split Presentation: Artwork Hung Directly on Wall Left · Wall Plaque Text Right */}
+            {/* Full-Wall Split Presentation: Artwork Glides Into Left · Wall Typography Staggers In Right */}
             <div className="min-h-full w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 pt-32 pb-16 flex items-center">
               <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-center">
-                {/* LEFT: Artwork Mounted Directly on the Museum Wall with Natural Gallery Drop Shadow */}
-                <div className="md:col-span-6 flex flex-col items-center">
+                {/* LEFT: Artwork Glides Smoothly From Center Focus Into Its Wall Frame */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 1.07, x: 32 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, x: 20 }}
+                  transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+                  className="md:col-span-6 flex flex-col items-center"
+                >
                   <div className="relative">
-                    {/* Soft overhead wall spotlight behind the frame */}
                     <div
                       className="pointer-events-none absolute -inset-12 -z-10"
                       style={{
                         background:
-                          'radial-gradient(circle at 50% 45%, rgba(255, 232, 184, 0.22) 0%, transparent 68%)',
+                          'radial-gradient(circle at 50% 45%, rgba(255, 232, 184, 0.24) 0%, transparent 68%)',
                       }}
                     />
                     <div className="p-2 bg-[#17161b] ring-1 ring-[#c5a260]/45 shadow-[0_32px_70px_rgba(0,0,0,0.65)]">
@@ -736,11 +774,16 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                     <span>{focusedExhibit.hallNumber}</span>
                     <span>{focusedExhibit.dimensions || focusedExhibit.period}</span>
                   </div>
-                </div>
+                </motion.div>
 
-                {/* RIGHT: Curatorial Text Printed Directly on the Gallery Wall + Enter Living Stage Beneath */}
+                {/* RIGHT: Curatorial Text Staggers Gracefully Onto the Wall */}
                 <div className="md:col-span-6 space-y-5 text-left">
-                  <div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.55, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  >
                     <span className="block text-[11px] font-semibold uppercase tracking-[0.24em] text-[#e5b85b] mb-1.5">
                       {focusedExhibit.categoryLabel}
                     </span>
@@ -750,10 +793,16 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                     <p className="text-base sm:text-lg text-[#e8e3d8] font-medium mt-1">
                       {focusedExhibit.creator}
                     </p>
-                  </div>
+                  </motion.div>
 
                   {/* Subtle Wall Hairline Metadata Row */}
-                  <div className="flex flex-wrap gap-x-5 gap-y-2 py-3 border-y border-[#f4f1ea]/15 text-xs text-[#d5d0c5]">
+                  <motion.div
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.5, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex flex-wrap gap-x-5 gap-y-2 py-3 border-y border-[#f4f1ea]/15 text-xs text-[#d5d0c5]"
+                  >
                     <span className="inline-flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-[#e5b85b]" />
                       {focusedExhibit.date}
@@ -766,20 +815,32 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                       <Layers className="w-3.5 h-3.5 text-[#e5b85b]" />
                       {focusedExhibit.mediumOrMaterial.split(';')[0]}
                     </span>
-                  </div>
+                  </motion.div>
 
                   {/* Clean Wall Description */}
-                  <div className="space-y-3 text-sm sm:text-[15px] text-[#e8e3d8]/92 leading-relaxed max-w-lg">
+                  <motion.div
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.52, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    className="space-y-3 text-sm sm:text-[15px] text-[#e8e3d8]/92 leading-relaxed max-w-lg"
+                  >
                     <p>{focusedExhibit.introduction}</p>
                     {focusedExhibit.story.paragraphs[0] && (
                       <p className="text-[#c5c0b7] text-xs sm:text-sm leading-relaxed">
                         {focusedExhibit.story.paragraphs[0]}
                       </p>
                     )}
-                  </div>
+                  </motion.div>
 
                   {/* Primary CTA Directly Beneath the Wall Text */}
-                  <div className="pt-3 max-w-md">
+                  <motion.div
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.52, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                    className="pt-3 max-w-md"
+                  >
                     <button
                       onClick={() => onSelectExhibit(focusedExhibit)}
                       className="w-full inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-full bg-[#e5b85b] hover:bg-[#f0c770] text-[#09090c] text-xs sm:text-sm font-bold uppercase tracking-[0.16em] transition-all cursor-pointer shadow-[0_14px_34px_rgba(0,0,0,0.35)]"
@@ -787,7 +848,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                       <Play className="w-4 h-4 fill-current" />
                       <span>Enter Living Stage</span>
                     </button>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             </div>
