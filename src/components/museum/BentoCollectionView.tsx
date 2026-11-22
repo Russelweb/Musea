@@ -59,7 +59,7 @@ export const BentoCollectionView: React.FC<BentoCollectionViewProps> = ({
         {/* 1. Header & Pinterest-Style Rounded Search Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#f4f1ea] tracking-tight">
+            <h1 className="font-art-script text-4xl sm:text-5xl text-[#f4f1ea] leading-none">
               Explore by Category
             </h1>
             <p className="text-xs sm:text-sm text-[#a39e93] mt-0.5">
@@ -173,7 +173,7 @@ export const BentoCollectionView: React.FC<BentoCollectionViewProps> = ({
         <div className="space-y-4">
           <div className="flex items-baseline justify-between border-b border-[#f4f1ea]/10 pb-3">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-[#f4f1ea] tracking-tight">
+              <h2 className="font-art-script text-3xl sm:text-4xl text-[#f4f1ea] leading-tight">
                 {query
                   ? `Search Results for "${query}"`
                   : selectedCategory === 'featured-8'

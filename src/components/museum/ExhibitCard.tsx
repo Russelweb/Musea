@@ -72,10 +72,10 @@ export const ExhibitCard: React.FC<ExhibitCardProps> = ({
 
         {/* Bottom Overlaid Title & Creator */}
         <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-          <h3 className="text-base sm:text-lg font-bold text-[#f4f1ea] group-hover:text-[#f3cf8a] leading-snug tracking-tight transition-colors">
+          <h3 className="font-art-script text-2xl sm:text-3xl text-[#f4f1ea] group-hover:text-[#f3cf8a] leading-none transition-colors">
             {exhibit.title}
           </h3>
-          <p className="text-xs text-[#d5d0c5]/85 font-medium mt-0.5 truncate">
+          <p className="text-xs text-[#d5d0c5]/85 font-medium mt-1 truncate">
             {exhibit.creator} · {exhibit.date}
           </p>
         </div>

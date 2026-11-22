@@ -55,13 +55,13 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
   return (
     <header className="fixed top-0 inset-x-0 z-40 px-4 sm:px-8 lg:px-12 pt-3.5 sm:pt-5 pointer-events-none">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        {/* Left: Airy Minimal Wordmark */}
+        {/* Left: Airy Minimal Wordmark (Billabong / Grand Hotel Script) */}
         <button
           onClick={() => handleSelectMode('stage')}
-          className="pointer-events-auto group flex items-center gap-2 px-4 py-2 rounded-full bg-[#111116]/60 backdrop-blur-2xl border border-[#f4f1ea]/10 hover:border-[#e5b85b]/50 transition-all cursor-pointer"
+          className="pointer-events-auto group flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#111116]/60 backdrop-blur-2xl border border-[#f4f1ea]/10 hover:border-[#e5b85b]/50 transition-all cursor-pointer"
         >
-          <span className="text-base sm:text-lg font-bold tracking-[0.18em] text-[#f4f1ea]">
-            MUSEA
+          <span className="font-art-script text-2xl sm:text-3xl leading-none text-[#f4f1ea] pt-0.5">
+            Musea
           </span>
           <span className="w-1.5 h-1.5 rounded-full bg-[#e5b85b]" />
         </button>

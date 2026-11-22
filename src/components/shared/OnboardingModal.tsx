@@ -190,8 +190,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </span>
                 </div>
 
-                {/* Main Headline (Ref 2: A Virtual World Of Timeless Art) */}
-                <h2 className="text-3xl sm:text-[34px] font-bold text-[#fdfbf7] tracking-tight leading-[1.12]">
+                {/* Main Headline (Billabong / Grand Hotel Script) */}
+                <h2 className="font-art-script text-4xl sm:text-5xl text-[#fdfbf7] leading-[1.08]">
                   {slide.headline}
                 </h2>
 

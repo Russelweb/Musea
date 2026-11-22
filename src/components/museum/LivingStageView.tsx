@@ -180,7 +180,7 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.28 }}
                   >
-                    <h2 className="text-base sm:text-lg font-bold text-[#fdfbf7] tracking-tight leading-snug mb-0.5">
+                    <h2 className="font-art-script text-2xl sm:text-3xl text-[#fdfbf7] leading-tight mb-0.5">
                       {activeChapter.heading}
                     </h2>
                     <p className="text-xs sm:text-sm text-[#e6e1d6] leading-relaxed line-clamp-2">
@@ -274,7 +274,7 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                   <span className="text-xs font-semibold text-[#e5b85b] block mb-1">
                     {exhibit.categoryLabel}
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-[#f4f1ea]">
+                  <h3 className="font-art-script text-3xl sm:text-4xl text-[#f4f1ea]">
                     {exhibit.title}
                   </h3>
                   <p className="text-xs text-[#a39e93] mt-1">
