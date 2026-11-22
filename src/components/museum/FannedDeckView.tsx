@@ -124,9 +124,9 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     jumpToExhibitIndex: (idx: number) => void;
     releaseFocus: () => void;
   }>({
-    step: () => {},
-    jumpToExhibitIndex: () => {},
-    releaseFocus: () => {},
+    step: () => { },
+    jumpToExhibitIndex: () => { },
+    releaseFocus: () => { },
   });
 
   // Order all 15 exhibits cleanly by Museum Discipline Wing along the winding hall
@@ -533,7 +533,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
           const walkWeight = absDy >= absDx * 0.66 ? 1.0 : 0.34;
           const lookWeight = absDx > absDy * 1.1 ? 0.52 : 0.24;
 
-          tgt = clamp(tgt + dy * 0.00066 * walkWeight);
+          tgt = clamp(tgt + dy * 0.00060 * walkWeight);
           yawT = Math.max(-1.08, Math.min(1.08, yawT + dx * 0.0034 * lookWeight));
         } else {
           const primaryDelta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
@@ -789,11 +789,10 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                   <button
                     key={cat.id}
                     onClick={() => jumpToCategory(cat.id)}
-                    className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer shrink-0 ${
-                      isActiveWing
+                    className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer shrink-0 ${isActiveWing
                         ? 'bg-[#e5b85b] text-[#09090c] font-semibold'
                         : 'text-[#d5d0c5] hover:text-[#f4f1ea]'
-                    }`}
+                      }`}
                   >
                     {cat.shortLabel}
                   </button>
