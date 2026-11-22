@@ -527,10 +527,14 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
 
         if (isTouchMobile) {
-          // On mobile/touch: horizontal swipe turns your head left/right to inspect portraits on both walls;
-          // vertical swipe walks smoothly forward and backward down the corridor!
-          yawT = Math.max(-1.28, Math.min(1.28, yawT + dx * 0.0068));
-          tgt = clamp(tgt + dy * 0.00048);
+          // 70% priority for walking forward/backward (up/down), 30% gentle sensitivity for looking left/right
+          const absDx = Math.abs(dx);
+          const absDy = Math.abs(dy);
+          const walkWeight = absDy >= absDx * 0.65 ? 1.0 : 0.35;
+          const lookWeight = absDx > absDy * 1.2 ? 0.45 : 0.18;
+
+          tgt = clamp(tgt + dy * 0.00072 * walkWeight);
+          yawT = Math.max(-1.05, Math.min(1.05, yawT + dx * 0.0024 * lookWeight));
         } else {
           const primaryDelta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
           tgt = clamp(tgt - primaryDelta * 0.00052);
