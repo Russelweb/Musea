@@ -106,11 +106,47 @@ function createSpotlightPoolTexture(): THREE.CanvasTexture {
   const ctx = c.getContext('2d');
   if (ctx) {
     const g = ctx.createRadialGradient(128, 114, 12, 128, 128, 124);
-    g.addColorStop(0, 'rgba(255, 236, 196, 0.75)');
-    g.addColorStop(0.48, 'rgba(240, 212, 154, 0.24)');
+    g.addColorStop(0, 'rgba(255, 236, 196, 0.72)');
+    g.addColorStop(0.48, 'rgba(240, 212, 154, 0.22)');
     g.addColorStop(1, 'rgba(240, 212, 154, 0)');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 256, 256);
+  }
+  return new THREE.CanvasTexture(c);
+}
+
+/** Soft circular radial sprite for atmospheric dust motes (prevents hard square pixels) */
+function createDustSpriteTexture(): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = 64;
+  c.height = 64;
+  const ctx = c.getContext('2d');
+  if (ctx) {
+    const g = ctx.createRadialGradient(32, 32, 2, 32, 32, 30);
+    g.addColorStop(0, 'rgba(255, 240, 204, 0.95)');
+    g.addColorStop(0.38, 'rgba(240, 212, 154, 0.4)');
+    g.addColorStop(1, 'rgba(240, 212, 154, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 64, 64);
+  }
+  return new THREE.CanvasTexture(c);
+}
+
+/** Soft gradient ceiling light strip with feathered falloff so it illuminates gently without overpowering artworks */
+function createCeilingLightTexture(): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = 128;
+  c.height = 32;
+  const ctx = c.getContext('2d');
+  if (ctx) {
+    const g = ctx.createLinearGradient(0, 0, 128, 0);
+    g.addColorStop(0, 'rgba(245, 226, 186, 0)');
+    g.addColorStop(0.25, 'rgba(245, 226, 186, 0.35)');
+    g.addColorStop(0.5, 'rgba(255, 242, 214, 0.65)');
+    g.addColorStop(0.75, 'rgba(245, 226, 186, 0.35)');
+    g.addColorStop(1, 'rgba(245, 226, 186, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 128, 32);
   }
   return new THREE.CanvasTexture(c);
 }
@@ -123,10 +159,12 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
   const apiRef = useRef<{
     step: (delta: number) => void;
     jumpToExhibitIndex: (idx: number) => void;
+    focusExhibitIndex: (idx: number) => void;
     releaseFocus: () => void;
   }>({
     step: () => { },
     jumpToExhibitIndex: () => { },
+    focusExhibitIndex: () => { },
     releaseFocus: () => { },
   });
 
@@ -195,7 +233,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     }, 360);
   }, []);
 
-  // Escape & Arrow Key navigation
+  // Escape, Enter (open current visible artwork), & Arrow Key navigation
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
@@ -204,11 +242,19 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       } else if (!focusedExhibit) {
         if (e.key === 'ArrowRight' || e.key === 'ArrowUp') apiRef.current.step(0.032);
         if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') apiRef.current.step(-0.032);
+        if (
+          e.key === 'Enter' &&
+          (document.activeElement === document.body ||
+            document.activeElement === mountRef.current)
+        ) {
+          const idx = hallExhibits.findIndex((ex) => ex.id === nearestExhibit.id);
+          if (idx >= 0) apiRef.current.focusExhibitIndex(idx);
+        }
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [focusedExhibit, handleReturnToHall]);
+  }, [focusedExhibit, handleReturnToHall, hallExhibits, nearestExhibit.id]);
 
   // Mount Three.js 3D Winding Museum Corridor
   useEffect(() => {
@@ -301,27 +347,62 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     addStrip((f) => at(f, -1, 0), (f) => at(f, -1, HT), 0x45434e); // Left wall
     addStrip((f) => at(f, 1, 0), (f) => at(f, 1, HT), 0x45434e);   // Right wall
     addStrip((f) => at(f, -1, 0), (f) => at(f, 1, 0), 0x2f2e36);   // Floor
-    addStrip((f) => at(f, -1, HT), (f) => at(f, 1, HT), 0x565460); // Ceiling
+    addStrip((f) => at(f, -1, HT), (f) => at(f, 1, HT), 0x52505c); // Ceiling
     addStrip((f) => at(f, -0.992, 0), (f) => at(f, -0.992, 0.16), 0x1d1c22); // Crisp skirting L
     addStrip((f) => at(f, 0.992, 0), (f) => at(f, 0.992, 0.16), 0x1d1c22);   // Crisp skirting R
-    // Luminous Architectural Ceiling Light Strip
-    addStrip((f) => at(f, -0.2, HT - 0.015), (f) => at(f, 0.2, HT - 0.015), 0xfff4dd, 0xfff4dd);
 
-    // Soft Floating Golden Dust Motes
+    // Soft Gradient Ceiling Light Strip with Feathered Falloff (never overpowers the paintings)
+    {
+      const ceilPos: number[] = [];
+      const ceilUvs: number[] = [];
+      const ceilIdx: number[] = [];
+      frames.forEach((f, i) => {
+        const a = at(f, -0.34, HT - 0.015);
+        const b = at(f, 0.34, HT - 0.015);
+        ceilPos.push(a.x, a.y, a.z, b.x, b.y, b.z);
+        const v = i / S;
+        ceilUvs.push(0, v, 1, v);
+        if (i < S) {
+          const k = i * 2;
+          ceilIdx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2);
+        }
+      });
+      const ceilGeo = new THREE.BufferGeometry();
+      ceilGeo.setAttribute('position', new THREE.Float32BufferAttribute(ceilPos, 3));
+      ceilGeo.setAttribute('uv', new THREE.Float32BufferAttribute(ceilUvs, 2));
+      ceilGeo.setIndex(ceilIdx);
+      const ceilTex = createCeilingLightTexture();
+      textures.push(ceilTex);
+      const ceilMat = new THREE.MeshBasicMaterial({
+        map: ceilTex,
+        transparent: true,
+        opacity: 0.72,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      });
+      geometries.push(ceilGeo);
+      materials.push(ceilMat);
+      scene.add(new THREE.Mesh(ceilGeo, ceilMat));
+    }
+
+    // Soft Circular Radial Dust Motes (never hard square pixels)
     const dp: number[] = [];
-    for (let k = 0; k < 520; k++) {
+    for (let k = 0; k < 420; k++) {
       const f = frames[Math.floor(Math.random() * S)];
       const q = f.p.clone().addScaledVector(f.n, (Math.random() * 2 - 1) * HW * 0.92);
-      dp.push(q.x, 0.35 + Math.random() * (HT - 0.6), q.z);
+      dp.push(q.x, 0.4 + Math.random() * (HT - 0.7), q.z);
     }
     const dg = new THREE.BufferGeometry();
     dg.setAttribute('position', new THREE.Float32BufferAttribute(dp, 3));
+    const dustSpriteTex = createDustSpriteTexture();
+    textures.push(dustSpriteTex);
     const dustMat = new THREE.PointsMaterial({
-      color: 0xfff0cc,
-      size: 0.048,
+      map: dustSpriteTex,
+      size: 0.085,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.48,
       depthWrite: false,
+      alphaTest: 0.01,
     });
     geometries.push(dg);
     materials.push(dustMat);
@@ -478,9 +559,11 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     });
 
     // Camera Walk Physics & Smooth Focus Turning
-    const clamp = (v: number) => Math.max(0.015, Math.min(0.955, v));
-    let tgt = clamp((ts[initialIdx] ?? 0.06) - 0.042);
-    let cur = Math.max(0.01, tgt - 0.035);
+    // Start further back on initial load so the first painting is cleanly framed (never cropped on desktop or off-screen on mobile)
+    const clamp = (v: number) => Math.max(0.004, Math.min(0.955, v));
+    const approachOffset = W < 640 ? 0.062 : 0.056;
+    let tgt = clamp((ts[initialIdx] ?? 0.06) - approachOffset);
+    let cur = tgt;
     let hov = -1;
     let focus = -1;
     let yaw = 0;
@@ -598,6 +681,20 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       };
     };
 
+    const triggerFocusOnIndex = (i: number) => {
+      if (i < 0 || i >= hallExhibits.length) return;
+      focus = i;
+      tgt = clamp(ts[i] - 0.015);
+      if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
+      focusTimerRef.current = window.setTimeout(() => {
+        const sourceRect = projectMeshToScreenRect(i);
+        setFocusedSelection({
+          exhibit: hallExhibits[i],
+          sourceRect,
+        });
+      }, 1200);
+    };
+
     const onPointerUp = (e: PointerEvent) => {
       const wasMoved = moved;
       dragStartX = null;
@@ -605,16 +702,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
       if (!wasMoved && focus < 0) {
         const i = pick(e.clientX, e.clientY);
         if (i >= 0) {
-          focus = i;
-          tgt = clamp(ts[i] - 0.015);
-          if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
-          focusTimerRef.current = window.setTimeout(() => {
-            const sourceRect = projectMeshToScreenRect(i);
-            setFocusedSelection({
-              exhibit: hallExhibits[i],
-              sourceRect,
-            });
-          }, 1200);
+          triggerFocusOnIndex(i);
         }
       }
     };
@@ -644,8 +732,12 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
         yawT = 0;
         setFocusedSelection(null);
         if (ts[idx] !== undefined) {
-          tgt = clamp(ts[idx] - 0.042);
+          const offset = window.innerWidth < 640 ? 0.062 : 0.056;
+          tgt = clamp(ts[idx] - offset);
         }
+      },
+      focusExhibitIndex: (idx: number) => {
+        triggerFocusOnIndex(idx);
       },
       releaseFocus: () => {
         focus = -1;
@@ -707,13 +799,21 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
 
       lamp.position.set(cam.position.x, 3.65, cam.position.z);
 
-      let best = 0;
-      let bestDist = 9;
-      ts.forEach((tVal, i) => {
-        const dd = Math.abs(tVal - safeCur - 0.035);
-        if (dd < bestDist) {
-          bestDist = dd;
-          best = i;
+      // Accurately detect whichever painting is actually visible & closest to screen center (fixes mobile/desktop mismatch)
+      let best = lastNear >= 0 ? lastNear : 0;
+      let bestScore = Infinity;
+      const projVec = new THREE.Vector3();
+      meshes.forEach((m, i) => {
+        m.getWorldPosition(projVec);
+        const dist = cam.position.distanceTo(projVec);
+        projVec.project(cam);
+        // Must be in front of camera (z in [-1, 1]) and within visible horizontal frame
+        if (projVec.z > -1 && projVec.z < 1 && Math.abs(projVec.x) < 0.98) {
+          const score = Math.abs(projVec.x) * 4.5 + dist * 0.25;
+          if (score < bestScore) {
+            bestScore = score;
+            best = i;
+          }
         }
       });
       if (best !== lastNear) {
@@ -751,9 +851,31 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden select-none bg-[#2d2c34]">
-      {/* 1. Three.js Interactive 3D Winding Museum Corridor */}
-      <div ref={mountRef} className="absolute inset-0 w-full h-full touch-none" />
+    <div className="relative w-full h-full overflow-hidden bg-[#2d2c34]">
+      {/* 1. Three.js Interactive 3D Winding Museum Corridor (Keyboard Accessible) */}
+      <div
+        ref={mountRef}
+        role="application"
+        tabIndex={0}
+        aria-label="3D Museum Hall — use Left and Right arrow keys to walk, Enter to open the artwork in front of you, or Tab to browse the artwork list."
+        className="absolute inset-0 w-full h-full touch-none select-none focus:outline-none"
+      />
+
+      {/* Visually-Hidden Accessible Artwork Directory for Keyboard & Screen Reader Visitors */}
+      <nav aria-label="Artworks in the 3D Museum Hall" className="sr-only">
+        <ul>
+          {hallExhibits.map((ex, idx) => (
+            <li key={ex.id}>
+              <button
+                type="button"
+                onClick={() => apiRef.current.focusExhibitIndex(idx)}
+              >
+                Open {ex.title} by {ex.creator} ({ex.date})
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {/* Paintbrush Loading Overlay While 3D Hall Textures Stream In */}
       <AnimatePresence>
@@ -781,9 +903,9 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
             transition={{ duration: 0.3 }}
             className="pointer-events-none absolute inset-x-0 bottom-4 sm:bottom-6 z-20 px-4 flex flex-col items-center gap-3"
           >
-            <div className="text-center">
-              <span className="block text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.26em] text-[#d5d0c5]">
-                You are walking past
+            <div className="text-center pointer-events-auto">
+              <span className="block text-xs font-medium uppercase tracking-[0.22em] text-[#d5d0c5]">
+                In view
               </span>
               <AnimatePresence mode="wait">
                 <motion.div
@@ -793,42 +915,63 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
                   exit={{ opacity: 0, y: -5 }}
                   transition={{ duration: 0.25 }}
                 >
-                  <h2 className="font-art-script text-3xl sm:text-4xl text-[#fdfbf7] leading-tight drop-shadow">
-                    {nearestExhibit.title}
-                  </h2>
-                  <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-[#e5b85b]">
-                    {nearestExhibit.categoryLabel} · {nearestExhibit.creator}
-                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const idx = hallExhibits.findIndex((e) => e.id === nearestExhibit.id);
+                      if (idx >= 0) apiRef.current.focusExhibitIndex(idx);
+                    }}
+                    className="group inline-flex flex-col items-center cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e5b85b] rounded-xl px-3 py-0.5"
+                    aria-label={`Open ${nearestExhibit.title} by ${nearestExhibit.creator}`}
+                  >
+                    <h1 className="font-art-script text-3xl sm:text-4xl text-[#fdfbf7] group-hover:text-[#f3cf8a] leading-tight drop-shadow transition-colors">
+                      {nearestExhibit.title}
+                    </h1>
+                    <p className="text-xs text-[#e5b85b]">
+                      {nearestExhibit.creator} · <span className="underline underline-offset-4">View work</span>
+                    </p>
+                  </button>
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* Wing Quick-Jump Bar */}
-            <div className="pointer-events-auto flex items-center gap-1 px-2 py-1 rounded-full bg-[#191820]/75 backdrop-blur-2xl border border-[#f4f1ea]/15 overflow-x-auto no-scrollbar max-w-[90vw]">
-              {CATEGORIES.map((cat) => {
-                const isActiveWing = nearestExhibit.category === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => jumpToCategory(cat.id)}
-                    className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer shrink-0 ${isActiveWing
-                        ? 'bg-[#e5b85b] text-[#09090c] font-semibold'
-                        : 'text-[#d5d0c5] hover:text-[#f4f1ea]'
-                      }`}
-                  >
-                    {cat.shortLabel}
-                  </button>
-                );
-              })}
+            {/* Wing Quick-Jump Bar with Right-Edge Scroll Fade Affordance on Mobile */}
+            <div className="pointer-events-auto relative max-w-[92vw]">
+              <div
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#191820]/80 backdrop-blur-2xl border border-[#f4f1ea]/15 overflow-x-auto no-scrollbar"
+                style={{
+                  maskImage:
+                    'linear-gradient(to right, black 0%, black 88%, transparent 100%)',
+                  WebkitMaskImage:
+                    'linear-gradient(to right, black 0%, black 88%, transparent 100%)',
+                }}
+              >
+                {CATEGORIES.map((cat) => {
+                  const isActiveWing = nearestExhibit.category === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => jumpToCategory(cat.id)}
+                      className={`min-h-[34px] px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 ${isActiveWing
+                          ? 'bg-[#e5b85b] text-[#09090c] font-semibold'
+                          : 'text-[#d5d0c5] hover:text-[#f4f1ea]'
+                        }`}
+                    >
+                      {cat.shortLabel}
+                    </button>
+                  );
+                })}
+                <span className="w-5 shrink-0" aria-hidden="true" />
+              </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[#d5d0c5]/80 text-center">
-              <MoveHorizontal className="w-3 h-3 text-[#e5b85b] shrink-0" />
+            <div className="flex items-center gap-1.5 text-xs text-[#d5d0c5]/85 text-center">
+              <MoveHorizontal className="w-3.5 h-3.5 text-[#e5b85b] shrink-0" />
               <span className="sm:hidden">
                 Swipe up/down to walk · Left/right to look · Tap art
               </span>
               <span className="hidden sm:inline">
-                Scroll or drag to walk · Click any artwork to view
+                Scroll or drag to walk · Click any artwork or press Enter to view
               </span>
             </div>
           </motion.div>

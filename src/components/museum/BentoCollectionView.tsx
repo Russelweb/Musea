@@ -179,8 +179,8 @@ export const BentoCollectionView: React.FC<BentoCollectionViewProps> = ({
 
         {/* 3. PINTEREST MASONRY GALLERY (Curated to at most 8 attention-pulling masterworks) */}
         <div className="space-y-4">
-          <div className="flex items-baseline justify-between border-b border-[#f4f1ea]/10 pb-3">
-            <div>
+          <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#f4f1ea]/10 pb-3">
+            <div className="min-w-0">
               <h2 className="font-art-script text-3xl sm:text-4xl text-[#f4f1ea] leading-tight">
                 {query
                   ? `Search Results for "${query}"`
@@ -188,7 +188,7 @@ export const BentoCollectionView: React.FC<BentoCollectionViewProps> = ({
                   ? '8 Most Iconic Masterworks in the World'
                   : activeCategoryMeta?.label}
               </h2>
-              <p className="text-xs text-[#a39e93] mt-0.5">
+              <p className="text-xs sm:text-sm text-[#a39e93] mt-1">
                 {selectedCategory === 'featured-8'
                   ? 'Handpicked world-famous works across paintings, sculpture, wonders and architecture'
                   : activeCategoryMeta?.description}

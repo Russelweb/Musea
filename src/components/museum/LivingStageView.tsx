@@ -176,7 +176,7 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden select-none bg-[#08080b]">
+    <div className="relative w-full h-full overflow-hidden bg-[#08080b]">
       {/* 1. SCULPTED EXHIBIT ROOM CANVAS (3D Frame, Spotlight, Dust Motes & Focal Ring) */}
       <div className="absolute inset-0 w-full h-full">
         <LivingArtworkCanvas
@@ -188,19 +188,21 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
         />
       </div>
 
-      {/* Soft Left & Right Masterpiece Switcher Buttons */}
+      {/* Soft Left & Right Masterpiece Switcher Buttons (Desktop/Tablet; mobile uses smooth touch swipe) */}
       <button
         onClick={handlePrevExhibit}
-        className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#121217]/60 hover:bg-[#e5b85b] text-[#f4f1ea]/85 hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/12 flex items-center justify-center transition-all cursor-pointer shadow-lg"
+        className="hidden sm:flex absolute left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-[#121217]/60 hover:bg-[#e5b85b] text-[#f4f1ea]/85 hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/12 items-center justify-center transition-colors cursor-pointer shadow-lg"
         title="Previous Artwork"
+        aria-label="Previous artwork"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
 
       <button
         onClick={handleNextExhibit}
-        className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#121217]/60 hover:bg-[#e5b85b] text-[#f4f1ea]/85 hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/12 flex items-center justify-center transition-all cursor-pointer shadow-lg"
+        className="hidden sm:flex absolute right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-[#121217]/60 hover:bg-[#e5b85b] text-[#f4f1ea]/85 hover:text-[#09090c] backdrop-blur-xl border border-[#f4f1ea]/12 items-center justify-center transition-colors cursor-pointer shadow-lg"
         title="Next Artwork"
+        aria-label="Next artwork"
       >
         <ChevronRight className="w-5 h-5" />
       </button>
@@ -209,13 +211,13 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
       <div className="absolute top-20 right-4 sm:top-auto sm:bottom-4 sm:right-7 z-40 flex items-center gap-2">
         <button
           onClick={toggleAmbientSound}
-          className={`p-2.5 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg ${
+          className={`w-11 h-11 rounded-full backdrop-blur-xl border flex items-center justify-center transition-colors cursor-pointer shadow-lg ${
             isAmbientSoundOn
               ? 'bg-[#e5b85b]/20 border-[#e5b85b]/60 text-[#e5b85b]'
               : 'bg-[#141419]/75 border-[#f4f1ea]/15 hover:border-[#e5b85b] text-[#d5d0c5] hover:text-[#f4f1ea]'
           }`}
           title={isAmbientSoundOn ? 'Mute Gallery Ambiance' : 'Play Gallery Ambiance'}
-          aria-label="Toggle gallery ambient sound"
+          aria-label={isAmbientSoundOn ? 'Mute gallery sound' : 'Play gallery sound'}
         >
           {isAmbientSoundOn ? (
             <Volume2 className="w-4 h-4" />
@@ -226,9 +228,9 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
 
         <button
           onClick={() => setIsPureArtMode((p) => !p)}
-          className="p-2.5 rounded-full bg-[#141419]/75 backdrop-blur-xl border border-[#f4f1ea]/15 hover:border-[#e5b85b] text-[#d5d0c5] hover:text-[#f4f1ea] transition-all cursor-pointer shadow-lg"
+          className="w-11 h-11 rounded-full bg-[#141419]/75 backdrop-blur-xl border border-[#f4f1ea]/15 hover:border-[#e5b85b] text-[#d5d0c5] hover:text-[#f4f1ea] flex items-center justify-center transition-colors cursor-pointer shadow-lg"
           title={isPureArtMode ? 'Show Story' : 'Full Screen Art'}
-          aria-label="Toggle full screen artwork view"
+          aria-label={isPureArtMode ? 'Show story card' : 'Full screen artwork'}
         >
           {isPureArtMode ? (
             <Minimize2 className="w-4 h-4 text-[#e5b85b]" />
@@ -246,14 +248,15 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.35 }}
+            onFocus={() => setIsAutoTourPlaying(false)}
             className="absolute inset-x-0 bottom-3 sm:bottom-4 z-30 px-4 sm:px-8 pointer-events-none"
           >
-            <div className="pointer-events-auto max-w-2xl mx-auto rounded-3xl bg-[#0e0e14]/84 backdrop-blur-2xl border border-[#f4f1ea]/14 px-5 sm:px-7 py-3 sm:py-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
-              {/* Top Row: Chapter Badge · Title · Step Dots */}
+            <div className="pointer-events-auto max-w-2xl mx-auto rounded-3xl bg-[#0e0e14]/88 backdrop-blur-2xl border border-[#f4f1ea]/14 px-5 sm:px-7 py-3.5 sm:py-4 shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
+              {/* Top Row: Chapter Badge · Title · Accessible Step Dots */}
               <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#e5b85b]/15 border border-[#e5b85b]/40 text-[#f3cf8a] text-[10px] font-bold uppercase tracking-wider shrink-0">
-                    <Sparkles className="w-2.5 h-2.5" />
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#e5b85b]/15 border border-[#e5b85b]/40 text-[#f3cf8a] text-xs font-semibold shrink-0">
+                    <Sparkles className="w-3 h-3" aria-hidden="true" />
                     {activeChapter.tabLabel}
                   </span>
                   <span className="text-xs text-[#f4f1ea]/90 font-semibold truncate">
@@ -264,27 +267,38 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                {/* Accessible 28px Padded Tap Targets Around Sleek 6px Step Bars */}
+                <div className="flex items-center" role="tablist" aria-label="Story chapters">
                   {chapters.map((chap, idx) => {
                     const isCurrent = idx === chapterIndex;
                     return (
                       <button
                         key={chap.id}
+                        role="tab"
+                        aria-selected={isCurrent}
+                        aria-label={`Chapter ${idx + 1}: ${chap.tabLabel}`}
                         onClick={() => setChapterIndex(idx)}
-                        title={chap.tabLabel}
-                        className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                          isCurrent
-                            ? 'w-5 bg-[#e5b85b]'
-                            : 'w-1.5 bg-[#f4f1ea]/25 hover:bg-[#f4f1ea]/50'
-                        }`}
-                      />
+                        className="min-w-[28px] min-h-[28px] flex items-center justify-center cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e5b85b] rounded-full"
+                      >
+                        <span
+                          className={`block h-1.5 rounded-full transition-all duration-300 ${
+                            isCurrent
+                              ? 'w-5 bg-[#e5b85b]'
+                              : 'w-1.5 bg-[#f4f1ea]/30 hover:bg-[#f4f1ea]/60'
+                          }`}
+                        />
+                      </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Story Moment */}
-              <div className="min-h-[60px] sm:min-h-[64px] flex flex-col justify-center">
+              {/* Unclamped, Screen-Reader-Live Story Moment */}
+              <div
+                aria-live="polite"
+                aria-atomic="true"
+                className="min-h-[64px] flex flex-col justify-center"
+              >
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`${exhibit.id}-${activeChapter.id}`}
@@ -293,49 +307,47 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <h2 className="font-art-script text-2xl sm:text-3xl text-[#fdfbf7] leading-tight mb-0.5">
+                    <h1 className="font-art-script text-2xl sm:text-3xl text-[#fdfbf7] leading-tight mb-1">
                       {activeChapter.heading}
-                    </h2>
-                    <p className="text-xs sm:text-sm text-[#e6e1d6] leading-relaxed line-clamp-2">
+                    </h1>
+                    <p className="text-xs sm:text-sm text-[#e6e1d6] leading-relaxed">
                       {activeChapter.body}
                     </p>
                   </motion.div>
                 </AnimatePresence>
               </div>
 
-              {/* Bottom Micro Bar: Simplified Controls */}
-              <div className="mt-2.5 pt-2 border-t border-[#f4f1ea]/8 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
+              {/* Bottom Controls Bar with Comfortable Tap Targets */}
+              <div className="mt-3 pt-2 border-t border-[#f4f1ea]/8 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
                   <button
                     onClick={() => setIsAutoTourPlaying((p) => !p)}
-                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[#d5d0c5] hover:text-[#f4f1ea] transition-colors cursor-pointer"
+                    className="min-h-[36px] px-2.5 inline-flex items-center gap-1.5 rounded-full text-xs font-medium text-[#d5d0c5] hover:text-[#f4f1ea] hover:bg-[#f4f1ea]/5 transition-colors cursor-pointer"
                   >
                     {isAutoTourPlaying ? (
                       <>
-                        <Pause className="w-3 h-3 text-[#e5b85b]" />
+                        <Pause className="w-3.5 h-3.5 text-[#e5b85b]" />
                         <span>Pause</span>
                       </>
                     ) : (
                       <>
-                        <Play className="w-3 h-3 text-[#e5b85b]" />
+                        <Play className="w-3.5 h-3.5 text-[#e5b85b]" />
                         <span>Auto</span>
                       </>
                     )}
                   </button>
 
-                  <span className="text-[#f4f1ea]/15">·</span>
-
                   <button
                     onClick={() => setShowFullDossierModal(true)}
-                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[#d5d0c5] hover:text-[#e5b85b] transition-colors cursor-pointer"
+                    className="min-h-[36px] px-2.5 inline-flex items-center gap-1.5 rounded-full text-xs font-medium text-[#d5d0c5] hover:text-[#e5b85b] hover:bg-[#f4f1ea]/5 transition-colors cursor-pointer"
                   >
-                    <BookOpen className="w-3 h-3 text-[#e5b85b]" />
+                    <BookOpen className="w-3.5 h-3.5 text-[#e5b85b]" />
                     <span>Read Story</span>
                   </button>
                 </div>
 
                 {/* Live Gold Progress Line */}
-                <div className="hidden sm:block flex-1 max-w-[140px] h-1 bg-[#f4f1ea]/10 rounded-full overflow-hidden">
+                <div className="hidden sm:block flex-1 max-w-[130px] h-1 bg-[#f4f1ea]/10 rounded-full overflow-hidden">
                   {isAutoTourPlaying ? (
                     <motion.div
                       key={`prog-${exhibit.id}-${activeChapter.id}`}
@@ -354,10 +366,10 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
 
                 <button
                   onClick={handleNextChapter}
-                  className="inline-flex items-center gap-1 px-3.5 py-1 rounded-full bg-[#e5b85b]/15 hover:bg-[#e5b85b] text-[#f3cf8a] hover:text-[#09090c] border border-[#e5b85b]/35 text-[11px] font-semibold transition-all cursor-pointer"
+                  className="min-h-[36px] inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#e5b85b]/15 hover:bg-[#e5b85b] text-[#f3cf8a] hover:text-[#09090c] border border-[#e5b85b]/35 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   <span>Next</span>
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -365,13 +377,16 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Slide-Up Full Story Overlay */}
+      {/* Accessible Full Story Dialog */}
       <AnimatePresence>
         {showFullDossierModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dossier-dialog-title"
             className="fixed inset-0 z-50 bg-[#050507]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-0 sm:p-6"
             onClick={() => setShowFullDossierModal(false)}
           >
@@ -389,9 +404,9 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
                   <span className="text-xs font-semibold text-[#e5b85b] block mb-1">
                     {exhibit.categoryLabel}
                   </span>
-                  <h3 className="font-art-script text-3xl sm:text-4xl text-[#f4f1ea]">
+                  <h2 id="dossier-dialog-title" className="font-art-script text-3xl sm:text-4xl text-[#f4f1ea]">
                     {exhibit.title}
-                  </h3>
+                  </h2>
                   <p className="text-xs text-[#a39e93] mt-1">
                     {exhibit.creator} · {exhibit.date} · {exhibit.location}
                   </p>

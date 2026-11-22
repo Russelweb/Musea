@@ -137,20 +137,21 @@ export const MuseumNavbar: React.FC<MuseumNavbarProps> = ({
           </button>
         </div>
 
-        {/* Right (Mobile Only): Clean Search + Collapsible Menu Trigger (Zero Overlap!) */}
+        {/* Right (Mobile Only): Clean Search + Collapsible Menu Trigger */}
         <div className="pointer-events-auto flex md:hidden items-center gap-2">
           <button
             onClick={onOpenSearch}
-            className="w-9 h-9 rounded-full bg-[#14141a]/75 backdrop-blur-2xl border border-[#f4f1ea]/12 flex items-center justify-center text-[#d5d0c5]"
-            aria-label="Search"
+            className="w-11 h-11 rounded-full bg-[#14141a]/75 backdrop-blur-2xl border border-[#f4f1ea]/12 flex items-center justify-center text-[#d5d0c5]"
+            aria-label="Search artworks"
           >
             <Search className="w-4 h-4 text-[#e5b85b]" />
           </button>
 
           <button
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#14141a]/80 backdrop-blur-2xl border border-[#f4f1ea]/15 text-xs font-semibold text-[#f4f1ea]"
-            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+            aria-label={`${MODE_LABELS[viewMode]} — navigation menu`}
+            className="min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-full bg-[#14141a]/80 backdrop-blur-2xl border border-[#f4f1ea]/15 text-xs font-semibold text-[#f4f1ea]"
           >
             <span className="text-[#e5b85b]">{MODE_LABELS[viewMode]}</span>
             {mobileMenuOpen ? (

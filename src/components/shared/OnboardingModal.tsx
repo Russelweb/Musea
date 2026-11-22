@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Sparkles, X } from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
 
 interface OnboardingSlide {
   id: string;
@@ -11,48 +11,44 @@ interface OnboardingSlide {
   headline: string;
   subheadline: string;
   image: string;
-  accent: string;
 }
 
 const ONBOARDING_SLIDES: OnboardingSlide[] = [
   {
     id: 'slide-1',
-    badge: 'FEATURED',
+    badge: 'Featured Work',
     artworkTitle: 'Portrait of a Young Woman',
-    artist: 'SANDRO BOTTICELLI',
+    artist: 'Sandro Botticelli',
     location: 'Städel Museum, Frankfurt',
-    headline: 'A Virtual World Of Timeless Art',
+    headline: 'Walk Through Five Millennia of Art',
     subheadline:
-      'Explore the beauty of world-famous paintings, sculptures and wonders, and discover the stories behind every masterpiece.',
+      'Step inside a nocturnal 3D corridor lined with fifteen landmark paintings, sculptures, monuments, and artefacts—each paired with its history and hidden details.',
     image:
       'https://commons.wikimedia.org/wiki/Special:FilePath/Sandro_Botticelli_048.jpg?width=960',
-    accent: '#E5A93C',
   },
   {
     id: 'slide-2',
-    badge: 'EXHIBIT ROOM',
+    badge: 'Exhibit Room',
     artworkTitle: 'The Creation of Adam',
-    artist: 'MICHELANGELO BUONARROTI',
+    artist: 'Michelangelo Buonarroti',
     location: 'Sistine Chapel, Vatican City',
-    headline: 'Art That Moves And Breathes',
+    headline: 'Art That Moves and Breathes',
     subheadline:
-      'No scrolling away from the canvas. Watch smooth gallery lighting and focus rings unveil hidden details while the story comes directly to you.',
+      'No scrolling away from the canvas. Guided focal rings highlight hidden brushstrokes and symbolism right on the work while the story unfolds beneath.',
     image:
       'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg/960px-Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg',
-    accent: '#E0B26B',
   },
   {
     id: 'slide-3',
-    badge: '3D HALL & GALLERY',
+    badge: '3D Hall & Gallery',
     artworkTitle: 'The Starry Night',
-    artist: 'VINCENT VAN GOGH',
+    artist: 'Vincent van Gogh',
     location: 'MoMA, New York',
-    headline: 'Walk Through The Museum',
+    headline: 'Explore at Your Own Pace',
     subheadline:
-      'Stroll down our 3D Museum Hall, inspect any framed work up close on the wall, or browse our curated Gallery by category.',
+      'Scroll, swipe, or use your arrow keys to stroll down the 3D Hall, click any frame to step closer on the wall, or browse the Gallery by discipline.',
     image:
       'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/960px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
-    accent: '#E2B857',
   },
 ];
 
@@ -66,26 +62,29 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onClose,
 }) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Keyboard navigation
+  // Focus dialog on open and restore previous focus on close
   useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') {
-        handleNext();
-      } else if (e.key === 'ArrowLeft') {
-        handlePrev();
-      } else if (e.key === 'Escape') {
-        handleFinish();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentSlideIndex]);
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement | null;
+      setTimeout(() => dialogRef.current?.focus(), 40);
+    } else if (previousFocusRef.current) {
+      previousFocusRef.current.focus();
+      previousFocusRef.current = null;
+    }
+  }, [isOpen]);
 
-  if (!isOpen) return null;
+  const handleFinish = () => {
+    try {
+      localStorage.setItem('musea_onboarded', 'true');
+    } catch {
+      // Ignore if localStorage unavailable
+    }
+    onClose();
+  };
 
-  const slide = ONBOARDING_SLIDES[currentSlideIndex];
   const isLast = currentSlideIndex === ONBOARDING_SLIDES.length - 1;
 
   const handleNext = () => {
@@ -100,14 +99,20 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     setCurrentSlideIndex((prev) => Math.max(0, prev - 1));
   };
 
-  const handleFinish = () => {
-    try {
-      localStorage.setItem('musea_onboarded', 'true');
-    } catch {
-      // Ignore if localStorage unavailable
-    }
-    onClose();
-  };
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') handleNext();
+      else if (e.key === 'ArrowLeft') handlePrev();
+      else if (e.key === 'Escape') handleFinish();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
+
+  if (!isOpen) return null;
+
+  const slide = ONBOARDING_SLIDES[currentSlideIndex];
 
   return (
     <AnimatePresence>
@@ -115,115 +120,132 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#040406]/90 backdrop-blur-2xl select-none"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="onboarding-heading"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#050508]/88 backdrop-blur-2xl"
+        onClick={handleFinish}
       >
-        {/* Phone / Device Frame Card Matching Reference 1 & 2 */}
-        <div className="relative w-full max-w-[430px] h-[92dvh] sm:h-[840px] max-h-[92dvh] rounded-[42px] sm:rounded-[48px] overflow-hidden bg-[#09090c] border border-[#f4f1ea]/15 shadow-[0_30px_100px_rgba(0,0,0,0.95)] flex flex-col justify-between">
-          {/* Animated Background Artwork with Smooth Ken-Burns Zoom */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={slide.id}
-              initial={{ opacity: 0, scale: 1.08 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 z-0 overflow-hidden"
-            >
-              <img
-                src={slide.image}
-                alt={slide.artworkTitle}
-                className="w-full h-full object-cover"
-              />
-              {/* Refined gradient overlay for clear typography legibility */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#060609] via-[#060609]/45 to-[#060609]/20" />
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Top Status Bar & Skip Button */}
-          <div className="relative z-20 flex items-center justify-between p-6 sm:p-7">
-            {/* Pill Indicator Dots */}
-            <div className="flex items-center gap-1.5">
-              {ONBOARDING_SLIDES.map((s, idx) => (
-                <button
-                  key={s.id}
-                  onClick={() => setCurrentSlideIndex(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    idx === currentSlideIndex
-                      ? 'w-7 bg-[#e5b85b]'
-                      : 'w-2 bg-[#f4f1ea]/35 hover:bg-[#f4f1ea]/70'
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-
-            {/* Skip / Close Pill */}
-            <button
-              onClick={handleFinish}
-              className="px-3.5 py-1.5 rounded-full bg-[#08080c]/60 hover:bg-[#08080c]/85 text-xs text-[#d5d0c5] hover:text-[#f4f1ea] border border-[#f4f1ea]/15 backdrop-blur-xl transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <span>Skip</span>
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Middle/Bottom: Reference #1 & #2 Overlaid Art Details & Headlines */}
-          <div className="relative z-20 p-6 sm:p-8 space-y-5">
-            {/* Slide Details with Animation */}
+        {/* Responsive Editorial Card: Full-Bleed Portrait on Mobile, Wide Museum Split Layout on Desktop */}
+        <div
+          ref={dialogRef}
+          tabIndex={-1}
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-[420px] md:max-w-4xl h-[86dvh] max-h-[760px] md:h-[560px] rounded-3xl overflow-hidden bg-[#101016] border border-[#f4f1ea]/14 shadow-[0_30px_100px_rgba(0,0,0,0.92)] flex flex-col md:grid md:grid-cols-12 focus:outline-none"
+        >
+          {/* LEFT / BACKGROUND (Mobile Full-Bleed, Desktop 6 Cols): Clean Artwork Plate */}
+          <div className="absolute inset-0 md:relative md:col-span-6 overflow-hidden bg-[#09090d]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={slide.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-                className="space-y-4"
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full h-full"
               >
-                {/* Yellow/Gold Badge Matching Ref 1 (FEATURED) */}
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#e5a93c] text-[#09090c] text-[10px] font-extrabold uppercase tracking-widest shadow">
-                    <Sparkles className="w-2.5 h-2.5" />
-                    {slide.badge}
-                  </span>
-                  <span className="text-[11px] text-[#f4f1ea]/70 font-medium">
-                    {slide.location}
-                  </span>
-                </div>
-
-                {/* Main Headline (Billabong / Grand Hotel Script) */}
-                <h2 className="font-art-script text-4xl sm:text-5xl text-[#fdfbf7] leading-[1.08]">
-                  {slide.headline}
-                </h2>
-
-                {/* Subheadline */}
-                <p className="text-xs sm:text-sm text-[#e6e1d6]/90 leading-relaxed font-normal">
-                  {slide.subheadline}
-                </p>
-
-                {/* Artist & Artwork Title Footnote Matching Ref 1 (Portrait of a Young Woman · SANDRO BOTTICELLI) */}
-                <div className="pt-1 flex items-baseline justify-between border-t border-[#f4f1ea]/10 text-xs">
-                  <span className="font-semibold text-[#f4f1ea] truncate max-w-[220px]">
-                    {slide.artworkTitle}
-                  </span>
-                  <span className="text-[11px] text-[#e5b85b] uppercase tracking-wider font-medium truncate">
-                    {slide.artist}
-                  </span>
-                </div>
+                <img
+                  src={slide.image}
+                  alt={`${slide.artworkTitle} by ${slide.artist}`}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#08080c] via-[#08080c]/55 to-[#08080c]/20 md:bg-gradient-to-t md:from-[#08080c]/75 md:via-transparent md:to-transparent" />
               </motion.div>
             </AnimatePresence>
 
-            {/* Bottom CTA Button: Exactly Matching Reference 2 ("Discover Art" + Circle Arrow) */}
+            {/* Desktop Artwork Attribution Bar */}
+            <div className="hidden md:flex absolute inset-x-0 bottom-0 p-5 items-baseline justify-between text-xs">
+              <span className="font-semibold text-[#f4f1ea]">{slide.artworkTitle}</span>
+              <span className="text-[#e5b85b]">{slide.artist}</span>
+            </div>
+          </div>
+
+          {/* RIGHT / BOTTOM CONTENT (Desktop 6 Cols, Mobile Overlay) */}
+          <div className="relative z-10 flex-1 md:col-span-6 flex flex-col justify-between p-6 sm:p-8 md:p-10">
+            {/* Top Bar: Step Indicators & Skip */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center" role="tablist" aria-label="Guide slides">
+                {ONBOARDING_SLIDES.map((s, idx) => (
+                  <button
+                    key={s.id}
+                    role="tab"
+                    aria-selected={idx === currentSlideIndex}
+                    aria-label={`Slide ${idx + 1}: ${s.badge}`}
+                    onClick={() => setCurrentSlideIndex(idx)}
+                    className="min-w-[28px] min-h-[28px] flex items-center justify-center cursor-pointer rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e5b85b]"
+                  >
+                    <span
+                      className={`block h-1.5 rounded-full transition-all duration-300 ${
+                        idx === currentSlideIndex
+                          ? 'w-7 bg-[#e5b85b]'
+                          : 'w-2 bg-[#f4f1ea]/35 hover:bg-[#f4f1ea]/70'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={handleFinish}
+                className="min-h-[36px] px-3.5 py-1.5 rounded-full bg-[#16161f]/80 hover:bg-[#222230] text-xs font-medium text-[#d5d0c5] hover:text-[#f4f1ea] border border-[#f4f1ea]/15 backdrop-blur-xl transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <span>Skip</span>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Middle Editorial Copy */}
+            <div className="my-auto pt-6 pb-4">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={slide.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  className="space-y-4"
+                >
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="px-3 py-1 rounded-full bg-[#e5b85b] text-[#09090c] font-bold tracking-wide">
+                      {slide.badge}
+                    </span>
+                    <span className="text-[#d5d0c5]/80">{slide.location}</span>
+                  </div>
+
+                  <h2
+                    id="onboarding-heading"
+                    className="font-art-script text-4xl sm:text-5xl text-[#fdfbf7] leading-[1.08]"
+                  >
+                    {slide.headline}
+                  </h2>
+
+                  <p className="text-sm text-[#e6e1d6]/90 leading-relaxed">
+                    {slide.subheadline}
+                  </p>
+
+                  {/* Mobile-only Artwork Footnote */}
+                  <div className="md:hidden pt-2 flex items-baseline justify-between border-t border-[#f4f1ea]/12 text-xs">
+                    <span className="font-semibold text-[#f4f1ea] truncate max-w-[200px]">
+                      {slide.artworkTitle}
+                    </span>
+                    <span className="text-[#e5b85b] truncate">{slide.artist}</span>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Bottom CTA Button */}
             <div className="pt-2">
               <button
                 onClick={handleNext}
-                className="group w-full flex items-center justify-between pl-7 pr-3 py-3 rounded-full bg-[#1c1c24]/90 hover:bg-[#252530] text-[#f4f1ea] border border-[#f4f1ea]/15 backdrop-blur-xl transition-all duration-300 cursor-pointer shadow-xl"
+                className="group w-full min-h-[52px] flex items-center justify-between pl-6 pr-2.5 py-2 rounded-full bg-[#e5b85b] hover:bg-[#f0c770] text-[#09090c] transition-colors duration-200 cursor-pointer shadow-xl"
               >
-                <span className="text-sm font-semibold tracking-wide">
-                  {isLast ? 'Enter Musea' : 'Discover Art'}
+                <span className="text-sm font-bold tracking-wide">
+                  {isLast ? 'Enter Musea' : 'Continue'}
                 </span>
-                <div className="w-10 h-10 rounded-full bg-[#2d2d38] group-hover:bg-[#e5b85b] group-hover:text-[#09090c] text-[#f4f1ea] flex items-center justify-center transition-all duration-300 shadow">
-                  <ArrowRight className="w-4 h-4 stroke-[2.2]" />
-                </div>
+                <span className="w-9 h-9 rounded-full bg-[#09090c]/15 group-hover:bg-[#09090c]/25 flex items-center justify-center transition-colors">
+                  <ArrowRight className="w-4 h-4 stroke-[2.4]" />
+                </span>
               </button>
             </div>
           </div>

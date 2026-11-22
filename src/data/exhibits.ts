@@ -152,7 +152,7 @@ export const EXHIBITS: Exhibit[] = [
     tagline:
       'A turbulent nocturnal sky painted from an asylum window, where grief and cosmic wonder dissolve into swirling light.',
     introduction:
-      'Painted in June 1889 from the east window of his room at the Saint-Paul-de-Mausole asylum in southern France, The Starry Night is an emotional cosmos where memory, astronomy and spiritual longing collide.',
+      'Inspired by the pre-dawn view from the east window of his room at the Saint-Paul-de-Mausole asylum in southern France, The Starry Night is an emotional cosmos where memory, astronomy and spiritual longing collide.',
     quote: {
       text: 'Looking at the stars always makes me dream.',
       attribution: 'Vincent van Gogh (1888)',

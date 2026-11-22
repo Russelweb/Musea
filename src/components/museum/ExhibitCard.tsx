@@ -37,7 +37,7 @@ export const ExhibitCard: React.FC<ExhibitCardProps> = ({
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onSelect(exhibit);
       }}
-      className="group break-inside-avoid mb-4 cursor-pointer select-none"
+      className="group break-inside-avoid mb-4 cursor-pointer"
     >
       {/* Pinterest Pin Image Container */}
       <div

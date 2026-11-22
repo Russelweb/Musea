@@ -136,12 +136,12 @@ export const LivingArtworkCanvas: React.FC<LivingArtworkCanvasProps> = ({
         ))}
       </div>
 
-      {/* 5. Physical Sculpted 3D Museum Frame Stage — 100% Uncropped Visibility */}
+      {/* 5. Physical Sculpted 3D Museum Frame Stage — Zero Overlap With Story Card */}
       <div
         className={`relative z-10 w-full h-full flex items-center justify-center transition-all duration-500 ${
           isPureArtMode
             ? 'px-4 sm:px-10 py-12'
-            : 'px-4 sm:px-12 pt-16 pb-28 sm:pb-32'
+            : 'px-4 sm:px-12 pt-16 pb-48 sm:pb-48'
         }`}
       >
         <AnimatePresence mode="wait">
@@ -195,7 +195,7 @@ export const LivingArtworkCanvas: React.FC<LivingArtworkCanvasProps> = ({
                       draggable={false}
                       onLoad={() => setImageLoaded(true)}
                       onError={() => setImageLoaded(true)}
-                      className={`max-h-[60dvh] sm:max-h-[65dvh] max-w-[86vw] sm:max-w-[78vw] w-auto h-auto object-contain block transition-opacity duration-500 ${
+                      className={`max-h-[50dvh] sm:max-h-[56dvh] max-w-[86vw] sm:max-w-[78vw] w-auto h-auto object-contain block transition-opacity duration-500 ${
                         imageLoaded ? 'opacity-100' : 'opacity-0'
                       }`}
                     />

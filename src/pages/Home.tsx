@@ -71,7 +71,7 @@ export const Home: React.FC = () => {
 
   return (
     <div
-      className="relative w-screen h-dvh overflow-hidden text-[#f4f1ea] select-none"
+      className="relative w-screen h-dvh overflow-hidden text-[#f4f1ea]"
       style={{ backgroundColor: activeExhibit.atmosphere.bgPrimary }}
     >
       {/* Opening Paintbrush Loading Screen */}
@@ -105,54 +105,56 @@ export const Home: React.FC = () => {
         onSelectExhibit={handleSelectExhibit}
       />
 
-      {/* Unified 100dvh Viewport Experience (Zero Page-Scrolling Fatigue) */}
-      <AnimatePresence mode="wait">
-        {viewMode === 'stage' && (
-          <motion.div
-            key="view-stage"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
-            className="w-full h-full"
-          >
-            <LivingStageView
-              exhibit={activeExhibit}
-              onSelectExhibit={handleSelectExhibit}
-              onOpenCollection={() => setViewMode('collection')}
-            />
-          </motion.div>
-        )}
+      {/* Unified 100dvh Viewport Experience Inside Semantic <main> Landmark */}
+      <main id="museum-main" className="w-full h-full">
+        <AnimatePresence mode="wait">
+          {viewMode === 'stage' && (
+            <motion.div
+              key="view-stage"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35 }}
+              className="w-full h-full"
+            >
+              <LivingStageView
+                exhibit={activeExhibit}
+                onSelectExhibit={handleSelectExhibit}
+                onOpenCollection={() => setViewMode('collection')}
+              />
+            </motion.div>
+          )}
 
-        {viewMode === 'deck' && (
-          <motion.div
-            key="view-deck"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.35 }}
-            className="w-full h-full"
-          >
-            <FannedDeckView
-              activeExhibit={activeExhibit}
-              onSelectExhibit={handleSelectExhibit}
-            />
-          </motion.div>
-        )}
+          {viewMode === 'deck' && (
+            <motion.div
+              key="view-deck"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.35 }}
+              className="w-full h-full"
+            >
+              <FannedDeckView
+                activeExhibit={activeExhibit}
+                onSelectExhibit={handleSelectExhibit}
+              />
+            </motion.div>
+          )}
 
-        {viewMode === 'collection' && (
-          <motion.div
-            key="view-collection"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.35 }}
-            className="w-full h-full"
-          >
-            <BentoCollectionView onSelectExhibit={handleSelectExhibit} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {viewMode === 'collection' && (
+            <motion.div
+              key="view-collection"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.35 }}
+              className="w-full h-full"
+            >
+              <BentoCollectionView onSelectExhibit={handleSelectExhibit} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 };
