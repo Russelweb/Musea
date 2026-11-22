@@ -205,8 +205,8 @@ export const LivingStageView: React.FC<LivingStageViewProps> = ({
         <ChevronRight className="w-5 h-5" />
       </button>
 
-      {/* Bottom-Right Ambient Room Controls: Sound & Full-Screen */}
-      <div className="absolute bottom-4 right-4 sm:right-7 z-40 flex items-center gap-2">
+      {/* Ambient Room Controls: Top-Right on Mobile (avoids Next button), Bottom-Right on Desktop */}
+      <div className="absolute top-20 right-4 sm:top-auto sm:bottom-4 sm:right-7 z-40 flex items-center gap-2">
         <button
           onClick={toggleAmbientSound}
           className={`p-2.5 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg ${
