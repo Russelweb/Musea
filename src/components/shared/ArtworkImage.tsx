@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MuseaLoader } from './MuseaLoader';
 
 interface ArtworkImageProps {
@@ -19,6 +19,17 @@ export const ArtworkImage: React.FC<ArtworkImageProps> = ({
 }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    setError(false);
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setLoaded(true);
+    } else {
+      setLoaded(false);
+    }
+  }, [src]);
 
   return (
     <div
@@ -38,6 +49,7 @@ export const ArtworkImage: React.FC<ArtworkImageProps> = ({
         </div>
       ) : (
         <img
+          ref={imgRef}
           src={src}
           alt={alt}
           loading={priority ? 'eager' : 'lazy'}

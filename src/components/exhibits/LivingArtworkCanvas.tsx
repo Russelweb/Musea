@@ -23,10 +23,16 @@ export const LivingArtworkCanvas: React.FC<LivingArtworkCanvasProps> = ({
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
   const [isInspectZoomed, setIsInspectZoomed] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
   const touchStartXRef = useRef<number | null>(null);
 
   useEffect(() => {
-    setImageLoaded(false);
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setImageLoaded(true);
+    } else {
+      setImageLoaded(false);
+    }
   }, [exhibit.images.main]);
 
   const { x, y, scale, rotateX, rotateY } = activeChapter.camera;
@@ -183,10 +189,12 @@ export const LivingArtworkCanvas: React.FC<LivingArtworkCanvasProps> = ({
                   <div className="relative overflow-hidden rounded-lg ring-1 ring-[#f4f1ea]/12 bg-[#09090d] min-w-[240px] min-h-[240px] flex items-center justify-center">
                     {!imageLoaded && <MuseaLoader variant="compact" />}
                     <img
+                      ref={imgRef}
                       src={exhibit.images.main}
                       alt={exhibit.title}
                       draggable={false}
                       onLoad={() => setImageLoaded(true)}
+                      onError={() => setImageLoaded(true)}
                       className={`max-h-[60dvh] sm:max-h-[65dvh] max-w-[86vw] sm:max-w-[78vw] w-auto h-auto object-contain block transition-opacity duration-500 ${
                         imageLoaded ? 'opacity-100' : 'opacity-0'
                       }`}
