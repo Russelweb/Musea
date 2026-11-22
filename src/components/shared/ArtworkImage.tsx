@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MuseaLoader } from './MuseaLoader';
 
 interface ArtworkImageProps {
   src: string;
@@ -14,7 +15,6 @@ export const ArtworkImage: React.FC<ArtworkImageProps> = ({
   alt,
   className = '',
   containerClassName = '',
-  accentColor = '#C9A96E',
   priority = false,
 }) => {
   const [loaded, setLoaded] = useState(false);
@@ -27,18 +27,11 @@ export const ArtworkImage: React.FC<ArtworkImageProps> = ({
         boxShadow: 'inset 0 0 0 1px rgba(244, 241, 234, 0.06)',
       }}
     >
-      {!loaded && !error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#121215] animate-pulse">
-          <div
-            className="w-8 h-8 rounded-full border border-t-transparent animate-spin opacity-40"
-            style={{ borderColor: `${accentColor} transparent ${accentColor} ${accentColor}` }}
-          />
-        </div>
-      )}
+      {!loaded && !error && <MuseaLoader variant="compact" />}
 
       {error ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-[#121216] border border-[#f4f1ea]/10">
-          <span className="font-serif-museum italic text-lg text-[#c9a96e] mb-1">{alt}</span>
+          <span className="font-art-script text-2xl text-[#e5b85b] mb-1">{alt}</span>
           <span className="text-xs uppercase tracking-[0.2em] text-[#a39e93]">
             Archival Plate
           </span>

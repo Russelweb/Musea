@@ -21,6 +21,7 @@ import {
 import { CATEGORIES, EXHIBITS } from '../../data/exhibits';
 import type { Exhibit } from '../../types/exhibit';
 import { useLenisScroll } from '../../hooks/useLenisScroll';
+import { MuseaLoader } from '../shared/MuseaLoader';
 
 interface ScreenRect {
   left: number;
@@ -148,6 +149,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
   const [nearestExhibit, setNearestExhibit] = useState<Exhibit>(
     hallExhibits[initialIdx] || hallExhibits[0]
   );
+  const [isHallLoading, setIsHallLoading] = useState(true);
   const [focusedSelection, setFocusedSelection] = useState<FocusedSelection | null>(null);
   const focusedExhibit = focusedSelection?.exhibit ?? null;
   const focusTimerRef = useRef<number | null>(null);
@@ -338,6 +340,15 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     const focusPositions: THREE.Vector3[] = [];
     const ts: number[] = [];
     const N = hallExhibits.length;
+    let loadedTexCount = 0;
+    let hallReady = false;
+    const markHallReady = () => {
+      if (!hallReady) {
+        hallReady = true;
+        setIsHallLoading(false);
+      }
+    };
+    const hallFallbackTimer = window.setTimeout(markHallReady, 1600);
 
     const frameMat = new THREE.MeshLambertMaterial({ color: 0x18161a });
     const brassTrimMat = new THREE.MeshBasicMaterial({ color: 0xc5a260 });
@@ -373,10 +384,13 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
           textures.push(loadedTex);
           artMat.map = loadedTex;
           artMat.needsUpdate = true;
+          loadedTexCount += 1;
+          if (loadedTexCount >= 3) markHallReady();
         },
         undefined,
         () => {
-          // Fallback already visible
+          loadedTexCount += 1;
+          if (loadedTexCount >= 3) markHallReady();
         }
       );
 
@@ -714,6 +728,7 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
 
     return () => {
       cancelAnimationFrame(rafId);
+      window.clearTimeout(hallFallbackTimer);
       if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
       dom.removeEventListener('wheel', onWheel);
       dom.removeEventListener('pointerdown', onPointerDown);
@@ -739,6 +754,13 @@ export const FannedDeckView: React.FC<FannedDeckViewProps> = ({
     <div className="relative w-full h-full overflow-hidden select-none bg-[#2d2c34]">
       {/* 1. Three.js Interactive 3D Winding Museum Corridor */}
       <div ref={mountRef} className="absolute inset-0 w-full h-full touch-none" />
+
+      {/* Paintbrush Loading Overlay While 3D Hall Textures Stream In */}
+      <AnimatePresence>
+        {isHallLoading && (
+          <MuseaLoader variant="overlay" label="Preparing 3D Hall" />
+        )}
+      </AnimatePresence>
 
       {/* Gentle Architectural Edge Vignette */}
       <div

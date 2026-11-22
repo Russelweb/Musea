@@ -12,6 +12,7 @@ import { LivingStageView } from '../components/museum/LivingStageView';
 import { FannedDeckView } from '../components/museum/FannedDeckView';
 import { BentoCollectionView } from '../components/museum/BentoCollectionView';
 import { OnboardingModal } from '../components/shared/OnboardingModal';
+import { MuseaLoader } from '../components/shared/MuseaLoader';
 
 export const Home: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -23,6 +24,7 @@ export const Home: React.FC = () => {
   const [viewMode, setViewMode] = useState<MuseumViewMode>(id ? 'stage' : 'deck');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
     try {
       return localStorage.getItem('musea_onboarded') !== 'true';
@@ -30,6 +32,12 @@ export const Home: React.FC = () => {
       return true;
     }
   });
+
+  // Brief opening brush-stroke splash while fonts & initial scene settle
+  useEffect(() => {
+    const timer = window.setTimeout(() => setIsInitialLoading(false), 1350);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // Sync URL param if user navigates directly to /exhibit/:id
   useEffect(() => {
@@ -66,6 +74,13 @@ export const Home: React.FC = () => {
       className="relative w-screen h-dvh overflow-hidden text-[#f4f1ea] select-none"
       style={{ backgroundColor: activeExhibit.atmosphere.bgPrimary }}
     >
+      {/* Opening Paintbrush Loading Screen */}
+      <AnimatePresence>
+        {isInitialLoading && (
+          <MuseaLoader variant="fullscreen" label="Opening Musea" />
+        )}
+      </AnimatePresence>
+
       {/* Floating App-Like Glass Navigation Bar */}
       <MuseumNavbar
         viewMode={viewMode}
